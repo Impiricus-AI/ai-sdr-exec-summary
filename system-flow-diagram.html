@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impiricus AI SDR — System Flow</title>
+<style>
+  :root {
+    --cyan: #0DEEFD;
+    --midnight: #0D1117;
+    --panel: #161B22;
+    --deep-blue: #194771;
+    --magenta: #D73371;
+    --green: #4CAF50;
+    --amber: #FFC107;
+    --purple: #CE93D8;
+    --orange: #FF7A45;
+    --muted: rgba(255,255,255,0.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(ellipse at top, #1a1f27 0%, var(--midnight) 60%);
+    color: white;
+    font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    padding: 40px 20px 80px;
+    min-height: 100vh;
+  }
+  .page { max-width: 1500px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .logo { font-size: 11px; letter-spacing: 5px; color: var(--muted); text-transform: uppercase; margin-bottom: 14px; }
+  .header .logo span { color: var(--cyan); }
+  .header h1 { font-size: 32px; font-weight: 300; margin-bottom: 10px; letter-spacing: -0.5px; }
+  .header h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--magenta), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+  }
+  .header .sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+    margin: 20px 0 24px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+  }
+  .legend .sw {
+    display: inline-block;
+    width: 28px;
+    height: 3px;
+    margin-right: 8px;
+    vertical-align: middle;
+    border-radius: 2px;
+  }
+  .legend .dashed, .legend .dotted {
+    display: inline-block;
+    width: 28px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .legend .dashed { border-top: 2px dashed; }
+  .legend .dotted { border-top: 2px dotted; }
+  svg { width: 100%; height: auto; display: block; }
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(13,238,253,0.15);
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .header h1 {
+    font-size: 36px;
+    font-weight: 300;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+    color: white;
+    background: none;
+    -webkit-text-fill-color: white;
+  }
+  .header .tagline {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--cyan);
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+  .header .logo {
+    margin-bottom: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .header .sub {
+    margin-bottom: 8px;
+  }
+  .legend {
+    margin: 22px auto 0;
+    max-width: 1100px;
+    padding: 14px 20px;
+    border-top: 1px solid rgba(13,238,253,0.15);
+    border-bottom: 1px solid rgba(13,238,253,0.15);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28" style="vertical-align: middle; margin-right: 10px;">
+        <path d="M43.7461 0.491211C67.8898 0.491295 87.4912 20.0966 87.4912 44.2451C87.4912 68.3938 67.8898 87.9999 43.7461 88C19.6022 88 0 68.3939 0 44.2451C3.83706e-05 20.0965 19.6022 0.491211 43.7461 0.491211ZM43.7461 12.3262C40.2182 12.3262 35.2779 13.2992 33.6484 13.96C32.7051 14.3424 32.7629 15.7774 33.9707 16.29L37.9785 17.9072L26.6904 22.4854C26.6904 22.4854 23.9272 21.4068 22.6514 20.3018C16.0199 26.1509 11.833 34.7129 11.833 44.2451C11.833 53.7723 16.0154 62.3305 22.6406 68.1797C23.9087 67.0761 26.6769 66.0043 26.6904 65.999L53.2217 55.2686C53.2217 55.2686 53.4264 55.1887 53.5273 55.1445C54.6855 54.6372 54.6913 53.1198 53.5273 52.626L49.5205 51.0098L60.8076 46.4307C60.8076 46.4307 64.3545 47.8152 65.2676 49.0537C66.1805 50.2923 66.2861 52.2569 66.2861 53.8623C66.2861 55.4676 66.1803 57.4475 65.2676 58.6865C64.3545 59.9255 60.8076 61.2969 60.8076 61.2969L34.2764 72.0264C34.2714 72.0283 34.0702 72.1078 33.9707 72.1514C32.878 72.6303 32.5862 74.0839 33.7852 74.5762C35.4144 75.2451 40.2693 76.1641 43.7461 76.1641C47.0465 76.164 51.5585 75.4667 53.5273 74.6045C54.6855 74.0972 54.6913 72.5798 53.5273 72.0859L49.5205 70.4688L60.8076 65.8906C60.8076 65.8906 63.6617 67.0051 64.9082 68.1289C71.5008 62.2797 75.6582 53.744 75.6582 44.2451C75.6582 34.6882 71.4497 26.1065 64.7881 20.2559C63.488 21.341 60.8076 22.377 60.8076 22.377L34.2764 33.1074C34.2683 33.1106 34.0694 33.1882 33.9707 33.2314C32.8125 33.7388 32.8067 35.256 33.9707 35.75L37.9785 37.3662L26.6904 41.9453C26.6904 41.9453 23.1445 40.5607 22.2314 39.3223C21.3184 38.0838 21.2119 36.1191 21.2119 34.5137C21.2119 32.9083 21.3185 30.9285 22.2314 29.6895C23.1444 28.4504 26.6904 27.0791 26.6904 27.0791L53.2217 16.3496C53.2217 16.3496 53.4263 16.2698 53.5273 16.2256C54.8733 15.6359 54.9065 14.3744 53.9922 14.0098C52.3618 13.3599 47.3286 12.3262 43.7461 12.3262ZM60.8076 26.9717C60.8076 26.9717 64.3544 28.3553 65.2676 29.5938C66.1805 30.8322 66.2861 32.7969 66.2861 34.4023C66.2861 36.0076 66.1802 37.9874 65.2676 39.2266C64.3545 40.4656 60.8076 41.8369 60.8076 41.8369L34.2764 52.5664C34.275 52.5669 34.0711 52.6474 33.9707 52.6914C32.8126 53.1988 32.8066 54.716 33.9707 55.21L37.9785 56.8262L26.6904 61.4043C26.6654 61.3945 23.1414 60.0162 22.2314 58.7822C21.3184 57.5438 21.2119 55.5791 21.2119 53.9736C21.2119 52.3683 21.3186 50.3885 22.2314 49.1494C23.1444 47.9104 26.6904 46.5391 26.6904 46.5391L53.2217 35.8096C53.2217 35.8096 53.4264 35.7287 53.5273 35.6846C54.6855 35.1772 54.6913 33.66 53.5273 33.166L49.5205 31.5498L60.8076 26.9717Z" fill="#0DEEFD"/>
+      </svg>
+      <span style="letter-spacing: 4px; color: #0DEEFD; font-size: 11px; font-weight: 500;">IMPIRICUS</span>
+    </div>
+    <h1>The AI-Powered SDR Agent</h1>
+    <div class="tagline">Full intelligence stack</div>
+    <div class="sub">
+      One operator action triggers signal enrichment across twelve Clay families and six federal data sources.
+      A decision matrix routes each email through one of eight persuasion frameworks, mapped to one of ten campaign approaches.
+      The output: personalized, signal-grounded outreach for any pharma manufacturer.
+    </div>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--cyan)"></span>Operator action</span>
+      <span><span class="sw" style="background:var(--magenta)"></span>Live data call</span>
+      <span><span class="dotted" style="border-color:var(--purple)"></span>Signal returning</span>
+      <span><span class="dashed" style="border-color:var(--amber)"></span>Feedback loop</span>
+      <span><span class="sw" style="background:var(--green)"></span>Output</span>
+    </div>
+  </div>
+
+  <div style="margin: 48px auto 32px; max-width: 1100px; display: flex; align-items: center; gap: 16px; color: rgba(13,238,253,0.5); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 500;">
+    <div style="flex: 1; height: 1px; background: rgba(13,238,253,0.15);"></div>
+    <span>The walkthrough</span>
+    <div style="flex: 1; height: 1px; background: rgba(13,238,253,0.15);"></div>
+  </div>
+
+  <svg viewBox="0 0 1500 4800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrowCyan" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <path d="M0,0 L10,4 L0,8 L2,4 z" fill="#0DEEFD"/>
+      </marker>
+      <marker id="arrowMagenta" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <path d="M0,0 L10,4 L0,8 L2,4 z" fill="#D73371"/>
+      </marker>
+      <marker id="arrowGreen" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <path d="M0,0 L10,4 L0,8 L2,4 z" fill="#4CAF50"/>
+      </marker>
+      <marker id="arrowAmber" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <path d="M0,0 L10,4 L0,8 L2,4 z" fill="#FFC107"/>
+      </marker>
+      <marker id="arrowPurple" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <path d="M0,0 L10,4 L0,8 L2,4 z" fill="#CE93D8"/>
+      </marker>
+      <marker id="arrowOrange" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+        <path d="M0,0 L10,4 L0,8 L2,4 z" fill="#FF7A45"/>
+      </marker>
+
+      <linearGradient id="gradCyan" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(13,238,253,0.2)"/>
+        <stop offset="100%" stop-color="rgba(13,238,253,0.04)"/>
+      </linearGradient>
+      <linearGradient id="gradMagenta" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(215,51,113,0.2)"/>
+        <stop offset="100%" stop-color="rgba(215,51,113,0.04)"/>
+      </linearGradient>
+      <linearGradient id="gradGreen" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(76,175,80,0.22)"/>
+        <stop offset="100%" stop-color="rgba(76,175,80,0.04)"/>
+      </linearGradient>
+      <linearGradient id="gradPurple" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(206,147,216,0.2)"/>
+        <stop offset="100%" stop-color="rgba(206,147,216,0.04)"/>
+      </linearGradient>
+      <linearGradient id="gradOrange" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(255,122,69,0.2)"/>
+        <stop offset="100%" stop-color="rgba(255,122,69,0.04)"/>
+      </linearGradient>
+      <linearGradient id="gradAmber" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(255,193,7,0.18)"/>
+        <stop offset="100%" stop-color="rgba(255,193,7,0.04)"/>
+      </linearGradient>
+      <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#D73371"/>
+        <stop offset="100%" stop-color="#0DEEFD"/>
+      </linearGradient>
+    </defs>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STAGE 1 — THE ENTRY POINT -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <text x="60" y="40" fill="#0DEEFD" font-size="13" letter-spacing="3" font-weight="700">
+      ① THE COMMERCIAL OPERATOR OPENS THE CONSOLE
+    </text>
+
+    <g transform="translate(40, 80)">
+      <rect x="0" y="0" width="1420" height="52" rx="10" fill="#0D1117" stroke="rgba(255,255,255,0.1)"/>
+      <circle cx="30" cy="26" r="14" fill="#0DEEFD" opacity="0.18"/>
+      <circle cx="30" cy="26" r="9" fill="#0DEEFD"/>
+      <text x="54" y="31" fill="white" font-size="13" font-weight="700" letter-spacing="2">IMPIRICUS</text>
+
+      <rect x="1110" y="14" width="110" height="24" rx="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.2)"/>
+      <text x="1165" y="30" text-anchor="middle" fill="white" font-size="10">New Campaign</text>
+      <rect x="1230" y="14" width="60" height="24" rx="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/>
+      <text x="1260" y="30" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">Import</text>
+      <rect x="1300" y="14" width="60" height="24" rx="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/>
+      <text x="1330" y="30" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">Training</text>
+      <rect x="1370" y="14" width="45" height="24" rx="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/>
+      <text x="1392" y="30" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">Admin</text>
+
+      <text x="710" y="108" text-anchor="middle" fill="url(#brandGrad)" font-size="28" font-weight="600">AI-Powered</text>
+      <text x="860" y="108" fill="white" font-size="28" font-weight="400">SDR Agent</text>
+      <text x="710" y="132" text-anchor="middle" fill="rgba(255,255,255,0.65)" font-size="12">
+        Signal-driven intelligence. Personalized outreach. Ready-to-send emails.
+      </text>
+
+      <text x="420" y="180" fill="#0DEEFD" font-size="12" font-weight="600">By Manufacturer</text>
+      <rect x="418" y="188" width="110" height="2" fill="#0DEEFD"/>
+      <text x="580" y="180" fill="rgba(255,255,255,0.4)" font-size="12">By Campaign</text>
+      <line x1="40" y1="190" x2="1380" y2="190" stroke="rgba(255,255,255,0.08)"/>
+
+      <rect x="40" y="210" width="1340" height="56" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+      <text x="70" y="232" fill="white" font-size="13" font-weight="700">ACADIA Pharmaceuticals</text>
+      <text x="70" y="250" fill="rgba(255,255,255,0.45)" font-size="10">acadia-pharm.com</text>
+      <rect x="200" y="240" width="56" height="14" rx="7" fill="rgba(13,238,253,0.15)" stroke="#0DEEFD"/>
+      <text x="228" y="250" text-anchor="middle" fill="#0DEEFD" font-size="8" font-weight="600">3 Emails</text>
+
+      <rect x="40" y="278" width="1340" height="56" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+      <text x="70" y="300" fill="white" font-size="13" font-weight="700">Nuvation Bio</text>
+      <text x="70" y="318" fill="rgba(255,255,255,0.45)" font-size="10">nuvationbio.com</text>
+      <rect x="160" y="308" width="56" height="14" rx="7" fill="rgba(13,238,253,0.15)" stroke="#0DEEFD"/>
+      <text x="188" y="318" text-anchor="middle" fill="#0DEEFD" font-size="8" font-weight="600">2 Emails</text>
+    </g>
+
+    <path d="M 1400 40 L 1440 40 L 1440 95 L 1230 95" stroke="#0DEEFD" stroke-width="2" fill="none" marker-end="url(#arrowCyan)"/>
+    <text x="1435" y="60" text-anchor="end" fill="#0DEEFD" font-size="11" font-weight="600">Click to start</text>
+    <path d="M 750 460 L 750 505" stroke="#0DEEFD" stroke-width="2.5" marker-end="url(#arrowCyan)"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STAGE 2 — ONE CONVERSATION -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <text x="60" y="540" fill="#D73371" font-size="13" letter-spacing="3" font-weight="700">
+      ② THE AGENT LEARNS THE CAMPAIGN THROUGH ONE CONVERSATION
+    </text>
+    <text x="60" y="560" fill="rgba(255,255,255,0.55)" font-size="11">
+      No forms. No wizards. The operator types intent; the agent extracts parameters automatically.
+    </text>
+
+    <g transform="translate(380, 580)">
+      <rect x="0" y="0" width="740" height="320" rx="14" fill="#0D1117" stroke="rgba(215,51,113,0.5)" stroke-width="1.5"/>
+      <text x="370" y="42" text-anchor="middle" fill="white" font-size="20" font-weight="400">
+        <tspan fill="url(#brandGrad)" font-weight="600">Campaign</tspan> Builder
+      </text>
+      <circle cx="350" cy="65" r="5" fill="#0DEEFD"/>
+      <circle cx="370" cy="65" r="5" fill="rgba(255,255,255,0.25)"/>
+      <circle cx="390" cy="65" r="5" fill="rgba(255,255,255,0.25)"/>
+
+      <rect x="40" y="95" width="540" height="85" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)"/>
+      <text x="60" y="118" fill="white" font-size="11">Welcome to the Impiricus Campaign Builder. Tell me about</text>
+      <text x="60" y="134" fill="white" font-size="11">your campaign — which manufacturers are you targeting, what</text>
+      <text x="60" y="150" fill="white" font-size="11">product and approach do you have in mind, and any specific</text>
+      <text x="60" y="166" fill="white" font-size="11">goals or nuances?</text>
+
+      <rect x="160" y="198" width="440" height="62" rx="10" fill="rgba(13,238,253,0.08)" stroke="rgba(13,238,253,0.3)"/>
+      <text x="180" y="220" fill="rgba(255,255,255,0.95)" font-size="11" font-style="italic">"Corcept Therapeutics — launch of Korlym label</text>
+      <text x="180" y="237" fill="rgba(255,255,255,0.95)" font-size="11" font-style="italic">expansion. Target Medical Affairs and Commercial.</text>
+      <text x="180" y="253" fill="rgba(255,255,255,0.95)" font-size="11" font-style="italic">Use Challenger. 150-word emails, Bold tone."</text>
+
+      <rect x="40" y="275" width="480" height="36" rx="8" fill="#161B22" stroke="rgba(255,255,255,0.15)"/>
+      <text x="56" y="297" fill="rgba(255,255,255,0.4)" font-size="11">Describe your campaign objective…</text>
+      <rect x="530" y="275" width="70" height="36" rx="8" fill="#0DEEFD"/>
+      <text x="565" y="297" text-anchor="middle" fill="#0D1117" font-size="11" font-weight="700">Send</text>
+    </g>
+
+    <g transform="translate(60, 620)">
+      <circle cx="10" cy="10" r="10" fill="#D73371"/>
+      <text x="10" y="14" text-anchor="middle" fill="white" font-size="11" font-weight="700">A</text>
+      <text x="30" y="14" fill="white" font-size="12" font-weight="600">Natural language in</text>
+      <text x="0" y="36" fill="rgba(255,255,255,0.65)" font-size="10">No dropdowns. Type intent.</text>
+    </g>
+    <g transform="translate(60, 720)">
+      <circle cx="10" cy="10" r="10" fill="#D73371"/>
+      <text x="10" y="14" text-anchor="middle" fill="white" font-size="11" font-weight="700">B</text>
+      <text x="30" y="14" fill="white" font-size="12" font-weight="600">AI extracts parameters</text>
+      <text x="0" y="36" fill="rgba(255,255,255,0.65)" font-size="10">Manufacturer, product,</text>
+      <text x="0" y="50" fill="rgba(255,255,255,0.65)" font-size="10">approach, tone, word count.</text>
+    </g>
+    <g transform="translate(60, 840)">
+      <circle cx="10" cy="10" r="10" fill="#D73371"/>
+      <text x="10" y="14" text-anchor="middle" fill="white" font-size="11" font-weight="700">C</text>
+      <text x="30" y="14" fill="white" font-size="12" font-weight="600">Review &amp; commit</text>
+      <text x="0" y="36" fill="rgba(255,255,255,0.65)" font-size="10">Operator confirms or edits</text>
+      <text x="0" y="50" fill="rgba(255,255,255,0.65)" font-size="10">any parameter before firing.</text>
+    </g>
+
+    <!-- Right side: parameters extracted -->
+    <g transform="translate(1150, 620)">
+      <rect x="0" y="0" width="300" height="260" rx="12" fill="rgba(215,51,113,0.06)" stroke="rgba(215,51,113,0.3)"/>
+      <text x="20" y="28" fill="#D73371" font-size="10" letter-spacing="2" font-weight="700">PARAMETERS EXTRACTED</text>
+
+      <text x="20" y="56" fill="rgba(255,255,255,0.5)" font-size="9">MANUFACTURER</text>
+      <text x="20" y="72" fill="white" font-size="12" font-weight="600">Corcept Therapeutics</text>
+
+      <text x="20" y="94" fill="rgba(255,255,255,0.5)" font-size="9">APPROACH</text>
+      <text x="20" y="110" fill="white" font-size="12" font-weight="600">Challenger Sale</text>
+
+      <text x="20" y="132" fill="rgba(255,255,255,0.5)" font-size="9">TONE</text>
+      <text x="20" y="148" fill="white" font-size="12" font-weight="600">Bold</text>
+
+      <text x="20" y="170" fill="rgba(255,255,255,0.5)" font-size="9">WORD COUNT</text>
+      <text x="20" y="186" fill="white" font-size="12" font-weight="600">150 words</text>
+
+      <text x="20" y="208" fill="rgba(255,255,255,0.5)" font-size="9">TARGET FUNCTIONS</text>
+      <text x="20" y="224" fill="white" font-size="12" font-weight="600">Medical Affairs · Commercial</text>
+
+      <text x="20" y="246" fill="rgba(255,255,255,0.5)" font-size="9">PRODUCT</text>
+      <text x="20" y="250" fill="white" font-size="12" font-weight="600"></text>
+    </g>
+
+    <path d="M 750 910 L 750 955" stroke="#D73371" stroke-width="2.5" marker-end="url(#arrowMagenta)"/>
+    <text x="765" y="940" fill="rgba(215,51,113,0.85)" font-size="10" font-style="italic">intent captured → trigger fires</text>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STAGE 3 — FULL INTELLIGENCE STACK -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <text x="60" y="985" fill="#CE93D8" font-size="13" letter-spacing="3" font-weight="700">
+      ③ THE FULL INTELLIGENCE STACK FIRES — THREE SOURCES, PARALLEL
+    </text>
+    <text x="60" y="1005" fill="rgba(255,255,255,0.55)" font-size="11">
+      Clay manufacturer enrichment. Clay contact discovery. Federal APIs. All simultaneous. Everything pushed back to the receiver.
+    </text>
+
+    <!-- Central trigger -->
+    <g transform="translate(670, 1030)">
+      <rect x="0" y="0" width="180" height="80" rx="12" fill="url(#gradMagenta)" stroke="#D73371" stroke-width="2"/>
+      <text x="90" y="28" text-anchor="middle" fill="#D73371" font-size="10" letter-spacing="2" font-weight="700">UNIFIED TRIGGER</text>
+      <circle cx="90" cy="52" r="14" fill="none" stroke="#D73371" stroke-width="2"/>
+      <circle cx="90" cy="52" r="8" fill="#D73371" opacity="0.5"/>
+      <circle cx="90" cy="52" r="3" fill="#D73371"/>
+      <text x="90" y="74" text-anchor="middle" fill="white" font-size="9">POST /clay/trigger</text>
+    </g>
+
+    <!-- Three source columns -->
+
+    <!-- LEFT: Clay Signals (12 families) -->
+    <g transform="translate(40, 1140)">
+      <rect x="0" y="0" width="470" height="700" rx="12" fill="url(#gradPurple)" stroke="#CE93D8" stroke-width="1.5"/>
+      <text x="20" y="28" fill="#CE93D8" font-size="11" letter-spacing="2" font-weight="700">CLAY · MANUFACTURER SIGNALS</text>
+      <text x="20" y="48" fill="white" font-size="13" font-weight="600">12 signal families · 54 enrichment columns · ~20 signals per account</text>
+      <line x1="20" y1="64" x2="450" y2="64" stroke="rgba(206,147,216,0.3)"/>
+
+      <!-- Signal rows -->
+      <g transform="translate(20, 80)">
+        <!-- S1 -->
+        <rect x="0" y="0" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="17" fill="#CE93D8" font-size="9" font-weight="700">S1 · FDA APPROVALS</text>
+        <text x="10" y="32" fill="white" font-size="10">Recent approvals, label expansions, new indications</text>
+        <text x="10" y="42" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ drives Pulse · launch trigger</text>
+
+        <!-- S2 -->
+        <rect x="0" y="52" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="69" fill="#CE93D8" font-size="9" font-weight="700">S2 · FIELD FORCE MOVEMENT</text>
+        <text x="10" y="84" fill="white" font-size="10">Hiring, reductions, restructuring of sales/medical teams</text>
+        <text x="10" y="94" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ drives Ascend · coverage gap signal</text>
+
+        <!-- S3 -->
+        <rect x="0" y="104" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="121" fill="#CE93D8" font-size="9" font-weight="700">S3 · HCP JOB POSTINGS</text>
+        <text x="10" y="136" fill="white" font-size="10">Open roles: MLR, MSL, KOL mgmt, omnichannel, NBA engine</text>
+        <text x="10" y="146" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ intent signal · where they're investing</text>
+
+        <!-- S4 -->
+        <rect x="0" y="156" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="173" fill="#CE93D8" font-size="9" font-weight="700">S4 · LATE-STAGE PIPELINE</text>
+        <text x="10" y="188" fill="white" font-size="10">Phase 2/3 trials, PDUFA dates, approaching launches</text>
+        <text x="10" y="198" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ future Pulse opportunity · build early</text>
+
+        <!-- S5 -->
+        <rect x="0" y="208" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="225" fill="#CE93D8" font-size="9" font-weight="700">S5 · COMPETITOR LAUNCHES</text>
+        <text x="10" y="240" fill="white" font-size="10">Competing products in same TA, market threats</text>
+        <text x="10" y="250" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ drives Spark · urgency trigger</text>
+
+        <!-- S6 -->
+        <rect x="0" y="260" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="277" fill="#CE93D8" font-size="9" font-weight="700">S6 · IRA PRICING PRESSURE</text>
+        <text x="10" y="292" fill="white" font-size="10">Medicare negotiation list exposure, pricing squeeze</text>
+        <text x="10" y="302" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ efficiency angle · GTM cost reduction</text>
+
+        <!-- S7 -->
+        <rect x="0" y="312" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="329" fill="#CE93D8" font-size="9" font-weight="700">S7 · COMPANY MILESTONES</text>
+        <text x="10" y="344" fill="white" font-size="10">Leadership changes, acquisitions, partnerships, rebrands</text>
+        <text x="10" y="354" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ fresh hooks · new budget windows</text>
+
+        <!-- S8 -->
+        <rect x="0" y="364" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="381" fill="#CE93D8" font-size="9" font-weight="700">S8 · TECH STACK GAP</text>
+        <text x="10" y="396" fill="white" font-size="10">Veeva, IQVIA OCE, Salesforce — and gap detection</text>
+        <text x="10" y="406" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ integration opportunity · no-platform = strong fit</text>
+
+        <!-- S16 -->
+        <rect x="0" y="416" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="433" fill="#CE93D8" font-size="9" font-weight="700">S16 · CONFERENCE PRESENCE</text>
+        <text x="10" y="448" fill="white" font-size="10">20+ pharma conferences: sponsorship, exhibition, podium</text>
+        <text x="10" y="458" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ Pulse surround sound · 2-3 week relevance window</text>
+
+        <!-- S17 -->
+        <rect x="0" y="468" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="485" fill="#CE93D8" font-size="9" font-weight="700">S17 · MARKET SENTIMENT</text>
+        <text x="10" y="500" fill="white" font-size="10">Analyst outlook, investor sentiment, media tone</text>
+        <text x="10" y="510" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ tone calibration · growth vs defensive narrative</text>
+
+        <!-- S10 -->
+        <rect x="0" y="520" width="430" height="46" rx="6" fill="rgba(206,147,216,0.08)" stroke="rgba(206,147,216,0.25)"/>
+        <text x="10" y="537" fill="#CE93D8" font-size="9" font-weight="700">S10 · RECENT NEWS (90 DAYS)</text>
+        <text x="10" y="552" fill="white" font-size="10">Google News scan · 3 articles with summaries per account</text>
+        <text x="10" y="562" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ fresh openers · "paying attention" quality</text>
+
+        <!-- Signal Summary -->
+        <rect x="0" y="572" width="430" height="46" rx="6" fill="rgba(206,147,216,0.15)" stroke="rgba(206,147,216,0.5)"/>
+        <text x="10" y="589" fill="#CE93D8" font-size="9" font-weight="700">SIGNAL SUMMARY COLUMN</text>
+        <text x="10" y="604" fill="white" font-size="10">AI column reads all 10 signals → 10 structured output fields</text>
+        <text x="10" y="614" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">→ solves CSV export / nested JSON problem</text>
+      </g>
+    </g>
+
+    <!-- MIDDLE: Clay Contacts -->
+    <g transform="translate(530, 1140)">
+      <rect x="0" y="0" width="440" height="700" rx="12" fill="url(#gradMagenta)" stroke="#D73371" stroke-width="1.5"/>
+      <text x="20" y="28" fill="#D73371" font-size="11" letter-spacing="2" font-weight="700">CLAY · CONTACT DISCOVERY</text>
+      <text x="20" y="48" fill="white" font-size="13" font-weight="600">~15 decision-makers per account · scored and enriched</text>
+      <line x1="20" y1="64" x2="420" y2="64" stroke="rgba(215,51,113,0.3)"/>
+
+      <g transform="translate(20, 80)">
+        <!-- Discovery -->
+        <rect x="0" y="0" width="400" height="60" rx="6" fill="rgba(215,51,113,0.08)" stroke="rgba(215,51,113,0.25)"/>
+        <text x="10" y="18" fill="#D73371" font-size="9" font-weight="700">FIND PEOPLE</text>
+        <text x="10" y="34" fill="white" font-size="10">Domain-based discovery of decision-makers</text>
+        <text x="10" y="48" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Brand · Medical Affairs · Market Access · Omnichannel</text>
+
+        <!-- Enrichment fields -->
+        <rect x="0" y="70" width="400" height="96" rx="6" fill="rgba(215,51,113,0.08)" stroke="rgba(215,51,113,0.25)"/>
+        <text x="10" y="88" fill="#D73371" font-size="9" font-weight="700">PER-CONTACT ENRICHMENT</text>
+        <text x="10" y="104" fill="white" font-size="10">· Full name, title, headline, function</text>
+        <text x="10" y="118" fill="white" font-size="10">· Work email (waterfall across providers)</text>
+        <text x="10" y="132" fill="white" font-size="10">· LinkedIn URL · career summary · job history</text>
+        <text x="10" y="146" fill="white" font-size="10">· Recent posts and shares · tenure · seniority</text>
+        <text x="10" y="160" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Email deliverability confidence scored</text>
+
+        <!-- Target personas -->
+        <rect x="0" y="176" width="400" height="190" rx="6" fill="rgba(215,51,113,0.08)" stroke="rgba(215,51,113,0.25)"/>
+        <text x="10" y="194" fill="#D73371" font-size="9" font-weight="700">TARGET PERSONAS (4 FUNCTIONS)</text>
+
+        <text x="10" y="214" fill="white" font-size="11" font-weight="600">Commercial</text>
+        <text x="10" y="228" fill="rgba(255,255,255,0.75)" font-size="9">VP/CMO/Head of Brand · Sales Ops · Launch leads</text>
+
+        <text x="10" y="248" fill="white" font-size="11" font-weight="600">Medical Affairs</text>
+        <text x="10" y="262" fill="rgba(255,255,255,0.75)" font-size="9">VP Medical · MSL Director · Medical Education lead</text>
+
+        <text x="10" y="282" fill="white" font-size="11" font-weight="600">Market Access</text>
+        <text x="10" y="296" fill="rgba(255,255,255,0.75)" font-size="9">VP Market Access · Payer Relations · HEOR</text>
+
+        <text x="10" y="316" fill="white" font-size="11" font-weight="600">Digital / Omnichannel</text>
+        <text x="10" y="330" fill="rgba(255,255,255,0.75)" font-size="9">VP Digital · Head of Omnichannel · Customer Experience</text>
+
+        <text x="10" y="354" fill="rgba(255,255,255,0.5)" font-size="9" font-style="italic">Exclusions: IT, R&amp;D, Finance, Legal, Interns, Coordinators</text>
+
+        <!-- Scoring -->
+        <rect x="0" y="376" width="400" height="170" rx="6" fill="rgba(215,51,113,0.1)" stroke="rgba(215,51,113,0.35)"/>
+        <text x="10" y="394" fill="#D73371" font-size="9" font-weight="700">RELEVANCE SCORING (weights)</text>
+
+        <text x="10" y="414" fill="rgba(255,255,255,0.85)" font-size="9">FDA Approval / Launch</text>
+        <text x="390" y="414" text-anchor="end" fill="#D73371" font-size="10" font-weight="700">10</text>
+
+        <text x="10" y="430" fill="rgba(255,255,255,0.85)" font-size="9">Contact changed jobs recently</text>
+        <text x="390" y="430" text-anchor="end" fill="#D73371" font-size="10" font-weight="700">9</text>
+
+        <text x="10" y="446" fill="rgba(255,255,255,0.85)" font-size="9">Field force reduction</text>
+        <text x="390" y="446" text-anchor="end" fill="#D73371" font-size="10" font-weight="700">9</text>
+
+        <text x="10" y="462" fill="rgba(255,255,255,0.85)" font-size="9">No HCP platform detected</text>
+        <text x="390" y="462" text-anchor="end" fill="#D73371" font-size="10" font-weight="700">8</text>
+
+        <text x="10" y="478" fill="rgba(255,255,255,0.85)" font-size="9">Competitor launch · pipeline</text>
+        <text x="390" y="478" text-anchor="end" fill="#D73371" font-size="10" font-weight="700">6-7</text>
+
+        <text x="10" y="494" fill="rgba(255,255,255,0.85)" font-size="9">Conference sponsorship</text>
+        <text x="390" y="494" text-anchor="end" fill="#D73371" font-size="10" font-weight="700">6</text>
+
+        <text x="10" y="510" fill="rgba(255,255,255,0.85)" font-size="9">Recent news · company milestone</text>
+        <text x="390" y="510" text-anchor="end" fill="#D73371" font-size="10" font-weight="700">3-4</text>
+
+        <text x="10" y="534" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Score = sum of (fired signals × weight), normalized 1–10</text>
+      </g>
+    </g>
+
+    <!-- RIGHT: Federal APIs (6 sources) -->
+    <g transform="translate(990, 1140)">
+      <rect x="0" y="0" width="470" height="700" rx="12" fill="url(#gradOrange)" stroke="#FF7A45" stroke-width="1.5"/>
+      <text x="20" y="28" fill="#FF7A45" font-size="11" letter-spacing="2" font-weight="700">FEDERAL APIS · 6 SOURCES</text>
+      <text x="20" y="48" fill="white" font-size="13" font-weight="600">Ground-truth regulatory and clinical intelligence</text>
+      <line x1="20" y1="64" x2="450" y2="64" stroke="rgba(255,122,69,0.3)"/>
+
+      <g transform="translate(20, 80)">
+        <rect x="0" y="0" width="430" height="78" rx="6" fill="rgba(255,122,69,0.08)" stroke="rgba(255,122,69,0.25)"/>
+        <text x="10" y="18" fill="#FF7A45" font-size="9" font-weight="700">CMS OPEN PAYMENTS</text>
+        <text x="10" y="34" fill="white" font-size="10">Physician payments by manufacturer · speaking, consulting,</text>
+        <text x="10" y="48" fill="white" font-size="10">meals · by TA, payment type, geography</text>
+        <text x="10" y="64" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Reveals KOL relationships · where they invest</text>
+        <text x="10" y="75" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">openpaymentsdata.cms.gov/api/1</text>
+
+        <rect x="0" y="86" width="430" height="78" rx="6" fill="rgba(255,122,69,0.08)" stroke="rgba(255,122,69,0.25)"/>
+        <text x="10" y="104" fill="#FF7A45" font-size="9" font-weight="700">FDA ORANGE BOOK</text>
+        <text x="10" y="120" fill="white" font-size="10">Drug patent expirations · exclusivity expiry dates</text>
+        <text x="10" y="134" fill="white" font-size="10">Loss-of-exclusivity windows</text>
+        <text x="10" y="150" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Dual signal: maximize current brand + prep next-gen</text>
+        <text x="10" y="161" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">api.fda.gov/drug/drugsfda</text>
+
+        <rect x="0" y="172" width="430" height="78" rx="6" fill="rgba(255,122,69,0.08)" stroke="rgba(255,122,69,0.25)"/>
+        <text x="10" y="190" fill="#FF7A45" font-size="9" font-weight="700">NPI REGISTRY</text>
+        <text x="10" y="206" fill="white" font-size="10">Physician counts by specialty and state</text>
+        <text x="10" y="220" fill="white" font-size="10">Powers Field Force Gap Calculator</text>
+        <text x="10" y="236" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Quantifies HCP coverage opportunity</text>
+        <text x="10" y="247" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">npiregistry.cms.hhs.gov/api</text>
+
+        <rect x="0" y="258" width="430" height="78" rx="6" fill="rgba(255,122,69,0.08)" stroke="rgba(255,122,69,0.25)"/>
+        <text x="10" y="276" fill="#FF7A45" font-size="9" font-weight="700">CMS FORMULARY</text>
+        <text x="10" y="292" fill="white" font-size="10">Which drugs are on which formularies</text>
+        <text x="10" y="306" fill="white" font-size="10">Formulary wins HCPs don't know about yet</text>
+        <text x="10" y="322" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Powers Formulary Win Accelerator approach</text>
+        <text x="10" y="333" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">data.cms.gov/formulary</text>
+
+        <rect x="0" y="344" width="430" height="78" rx="6" fill="rgba(255,122,69,0.08)" stroke="rgba(255,122,69,0.25)"/>
+        <text x="10" y="362" fill="#FF7A45" font-size="9" font-weight="700">FDA ADVERSE EVENTS</text>
+        <text x="10" y="378" fill="white" font-size="10">Approvals · label changes · safety communications</text>
+        <text x="10" y="392" fill="white" font-size="10">Real-time regulatory events</text>
+        <text x="10" y="408" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Powers Label Change Alert · New Manufacturer Discovery</text>
+        <text x="10" y="419" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">api.fda.gov/drug/event</text>
+
+        <rect x="0" y="430" width="430" height="78" rx="6" fill="rgba(255,122,69,0.08)" stroke="rgba(255,122,69,0.25)"/>
+        <text x="10" y="448" fill="#FF7A45" font-size="9" font-weight="700">CLINICALTRIALS.GOV</text>
+        <text x="10" y="464" fill="white" font-size="10">Active studies · trial phases · principal investigators</text>
+        <text x="10" y="478" fill="white" font-size="10">Investigator-site identification</text>
+        <text x="10" y="494" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Powers Clinical Trial Investigator Bridge · warmest audience</text>
+        <text x="10" y="505" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">clinicaltrials.gov/api/v2</text>
+
+        <!-- Free -->
+        <rect x="0" y="522" width="430" height="58" rx="6" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.3)"/>
+        <text x="10" y="540" fill="#4CAF50" font-size="9" font-weight="700">ALL FREE · NO API KEYS · GROUND-TRUTH</text>
+        <text x="10" y="556" fill="rgba(255,255,255,0.8)" font-size="10">Every federal signal tied to a government data source.</text>
+        <text x="10" y="570" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Never fabricated. Always citable.</text>
+      </g>
+    </g>
+
+    <!-- Spokes from trigger to three sources -->
+    <path d="M 670 1080 Q 400 1100 275 1140" stroke="#D73371" stroke-width="2" fill="none" marker-end="url(#arrowMagenta)"/>
+    <path d="M 760 1110 L 750 1140" stroke="#D73371" stroke-width="2" marker-end="url(#arrowMagenta)"/>
+    <path d="M 850 1080 Q 1110 1100 1225 1140" stroke="#D73371" stroke-width="2" fill="none" marker-end="url(#arrowMagenta)"/>
+
+    <!-- Return signals (purple dotted) curving from sources back to accumulator below -->
+    <path d="M 275 1840 Q 300 1880 450 1890" stroke="#CE93D8" stroke-width="1.8" fill="none" stroke-dasharray="2,3" marker-end="url(#arrowPurple)"/>
+    <path d="M 750 1840 L 750 1885" stroke="#CE93D8" stroke-width="1.8" fill="none" stroke-dasharray="2,3" marker-end="url(#arrowPurple)"/>
+    <path d="M 1225 1840 Q 1200 1880 1050 1890" stroke="#CE93D8" stroke-width="1.8" fill="none" stroke-dasharray="2,3" marker-end="url(#arrowPurple)"/>
+
+    <!-- Accumulation layer -->
+    <g transform="translate(350, 1885)">
+      <rect x="0" y="0" width="800" height="80" rx="12" fill="rgba(76,175,80,0.08)" stroke="#4CAF50" stroke-width="1.5"/>
+      <text x="25" y="28" fill="#4CAF50" font-size="10" letter-spacing="2.5" font-weight="700">
+        ACCUMULATED MANUFACTURER INTELLIGENCE · ALL SIGNALS ATTRIBUTED
+      </text>
+      <text x="25" y="52" fill="white" font-size="13" font-weight="500">
+        ~20 Clay signals + ~15 contacts + federal ground-truth — reusable across every future campaign.
+      </text>
+      <text x="25" y="70" fill="rgba(255,255,255,0.6)" font-size="10">
+        Written to local store on port 8400. Persists across sessions. Never fabricated.
+      </text>
+    </g>
+
+    <path d="M 750 1965 L 750 2010" stroke="#4CAF50" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STAGE 4 — 10 CAMPAIGN APPROACHES -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <text x="60" y="2040" fill="#FFC107" font-size="13" letter-spacing="3" font-weight="700">
+      ④ TEN PROVEN CAMPAIGN APPROACHES — SIGNAL-TO-STRATEGY
+    </text>
+    <text x="60" y="2060" fill="rgba(255,255,255,0.55)" font-size="11">
+      Each approach is a battle-tested play. Signals light up which approach fits. Operator picks or overrides.
+    </text>
+
+    <!-- 10 approach cards in 2x5 grid -->
+    <g transform="translate(40, 2085)">
+      <!-- Row 1 -->
+      <g>
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">1 · FIELD FORCE GAP</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Quantify HCP coverage gap</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">from workforce reduction. Ascend</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">fills the gap without new headcount.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">Field force reduction · NPI counts</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Challenger Arc</text>
+      </g>
+
+      <g transform="translate(290, 0)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">2 · JOB CHANGE INTERCEPT</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Champion job change alert</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Re-engage at new manufacturer.</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">3-5x conversion in first 90 days.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">Contact job change (weight: 9)</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Bite-Size Consistent</text>
+      </g>
+
+      <g transform="translate(580, 0)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">3 · CONFERENCE MOMENTUM</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Post-conference capture</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Deliver to 85-95% of HCPs who</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">didn't attend. 2-3 week window.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">S16 conference presence</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Bite-Size Consistent</text>
+      </g>
+
+      <g transform="translate(870, 0)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">4 · PATIENT ACCESS GAP</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Mission framing</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Frame engagement as patient</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">access failure. Mission in action.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">New approval + no coverage plan</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Start Soft Go Deep</text>
+      </g>
+
+      <g transform="translate(1160, 0)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">5 · STALLED DEAL SIGNAL</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Re-ignite with fresh data</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Fresh signals for deals stuck</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">30+ days. Arms the champion.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">HubSpot stale deal + new signal</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ SPIN Arc</text>
+      </g>
+
+      <!-- Row 2 -->
+      <g transform="translate(0, 160)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">6 · NEW MFR DISCOVERY</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">FDA-driven net new</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">FDA alerts auto-identify new</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">companies. Deals that don't exist.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">FDA new approval RSS</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Start Soft Go Deep</text>
+      </g>
+
+      <g transform="translate(290, 160)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">7 · NO-SEE PHYSICIAN</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Rep-restricted HCP angle</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Quantify physicians who block</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">reps. Only Impiricus reaches them.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">Veeva access restriction data</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Challenger Arc</text>
+      </g>
+
+      <g transform="translate(580, 160)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">8 · MULTI-STAKEHOLDER</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Surround a single account</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Hit multiple departments with</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">function-specific angles.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">Multiple personas at one mfr</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ SPIN Arc</text>
+      </g>
+
+      <g transform="translate(870, 160)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">9 · TRIAL INVESTIGATOR</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Warmest audience play</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Target physicians who ran the</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">trials. Already believers.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">ClinicalTrials.gov PI data</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Bite-Size Consistent</text>
+      </g>
+
+      <g transform="translate(1160, 160)">
+        <rect x="0" y="0" width="280" height="150" rx="10" fill="rgba(255,193,7,0.06)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="15" y="24" fill="#FFC107" font-size="10" font-weight="700">10 · LABEL CHANGE ALERT</text>
+        <text x="15" y="48" fill="white" font-size="11" font-weight="600">Compliance infrastructure</text>
+        <text x="15" y="66" fill="rgba(255,255,255,0.75)" font-size="9">Position Impiricus as clinical</text>
+        <text x="15" y="80" fill="rgba(255,255,255,0.75)" font-size="9">compliance infrastructure.</text>
+        <text x="15" y="108" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">SIGNAL TRIGGER</text>
+        <text x="15" y="122" fill="rgba(255,255,255,0.65)" font-size="9">FDA label change event</text>
+        <text x="15" y="138" fill="rgba(255,255,255,0.45)" font-size="9" font-style="italic">→ Bite-Size Consistent</text>
+      </g>
+    </g>
+
+    <path d="M 750 2425 L 750 2475" stroke="#FFC107" stroke-width="2.5" marker-end="url(#arrowAmber)"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STAGE 5 — 8 PERSUASION FRAMEWORKS + DECISION MATRIX -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <text x="60" y="2510" fill="#0DEEFD" font-size="13" letter-spacing="3" font-weight="700">
+      ⑤ EIGHT PERSUASION FRAMEWORKS · ROUTED BY THE DECISION MATRIX
+    </text>
+    <text x="60" y="2530" fill="rgba(255,255,255,0.55)" font-size="11">
+      Every email is written using 2–3 frameworks combined. Approach × Persona × Sequence Position determines the mix.
+    </text>
+
+    <!-- Decision matrix band -->
+    <g transform="translate(40, 2555)">
+      <rect x="0" y="0" width="1420" height="80" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>
+      <text x="25" y="26" fill="rgba(255,255,255,0.85)" font-size="11" letter-spacing="3" font-weight="700">
+        PERSUASION DECISION MATRIX · 3-INPUT ROUTER
+      </text>
+      <g transform="translate(20, 38)">
+        <rect x="0" y="0" width="450" height="34" rx="6" fill="rgba(215,51,113,0.15)" stroke="#D73371"/>
+        <text x="225" y="14" text-anchor="middle" fill="#D73371" font-size="9" font-weight="700" letter-spacing="1">CAMPAIGN APPROACH</text>
+        <text x="225" y="28" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">10 approaches from Stage 4</text>
+      </g>
+      <g transform="translate(490, 38)">
+        <rect x="0" y="0" width="450" height="34" rx="6" fill="rgba(255,122,69,0.15)" stroke="#FF7A45"/>
+        <text x="225" y="14" text-anchor="middle" fill="#FF7A45" font-size="9" font-weight="700" letter-spacing="1">CONTACT PERSONA</text>
+        <text x="225" y="28" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">Commercial · Medical · Access · Digital</text>
+      </g>
+      <g transform="translate(960, 38)">
+        <rect x="0" y="0" width="440" height="34" rx="6" fill="rgba(13,238,253,0.15)" stroke="#0DEEFD"/>
+        <text x="220" y="14" text-anchor="middle" fill="#0DEEFD" font-size="9" font-weight="700" letter-spacing="1">SEQUENCE POSITION</text>
+        <text x="220" y="28" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">Email 1 · 2 · 3 in the arc</text>
+      </g>
+    </g>
+
+    <!-- 8 frameworks in 2x4 -->
+    <g transform="translate(40, 2660)">
+      <!-- Row 1 -->
+      <g>
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradCyan)" stroke="#0DEEFD" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#0DEEFD" font-size="10" font-weight="700">CARNEGIE</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">"How to Win Friends"</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(13,238,253,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Governs relationship-building tone.</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">Appreciation · other's interests ·</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">feel important · their idea · friendly.</text>
+        <text x="20" y="140" fill="rgba(13,238,253,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">Consultative campaigns · SPIN arcs</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Medical Affairs persona · openings</text>
+      </g>
+
+      <g transform="translate(360, 0)">
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradMagenta)" stroke="#D73371" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#D73371" font-size="10" font-weight="700">CIALDINI · INFLUENCE</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">7 principles of persuasion</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(215,51,113,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Reciprocity · consistency · social</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">proof · authority · liking · scarcity ·</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">unity. Mapped to email structure.</text>
+        <text x="20" y="140" fill="rgba(215,51,113,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">Every email · psychological layer</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Scarcity = conference windows · PDUFA</text>
+      </g>
+
+      <g transform="translate(720, 0)">
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradOrange)" stroke="#FF7A45" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#FF7A45" font-size="10" font-weight="700">CHALLENGER SALE</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">Teach · Tailor · Take Control</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(255,122,69,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Deliver insight that reframes their</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">thinking. Tailored to role. Propose</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">specific next step. Highest-performing.</text>
+        <text x="20" y="140" fill="rgba(255,122,69,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">Bold tone · Commercial persona</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Field Force Gap · No-See approaches</text>
+      </g>
+
+      <g transform="translate(1080, 0)">
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradPurple)" stroke="#CE93D8" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#CE93D8" font-size="10" font-weight="700">SPIN SELLING</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">Situation-Problem-Implication-Need</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(206,147,216,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Email 1 = Situation + Problem.</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">Email 2 = Implication.</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">Email 3 = Need-Payoff with proof.</text>
+        <text x="20" y="140" fill="rgba(206,147,216,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">Consultative campaigns · Stalled Deal</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Multi-email sequences</text>
+      </g>
+
+      <!-- Row 2 -->
+      <g transform="translate(0, 190)">
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradGreen)" stroke="#4CAF50" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#4CAF50" font-size="10" font-weight="700">PRE-SUASION (CIALDINI 2)</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">Prime before you pitch</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(76,175,80,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Signal bridge: connects their reality</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">to an Impiricus-relevant insight</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">before the value prop lands.</text>
+        <text x="20" y="140" fill="rgba(76,175,80,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">Opening lines · signal injection</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Every framework uses this first</text>
+      </g>
+
+      <g transform="translate(360, 190)">
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradAmber)" stroke="#FFC107" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#FFC107" font-size="10" font-weight="700">BRIAN TRACY</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">CTA construction</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(255,193,7,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Urgency without pressure.</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">"Worth a brief conversation about</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">your Q2 priorities?"</text>
+        <text x="20" y="140" fill="rgba(255,193,7,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">All CTAs · every email close</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Specific · time-anchored · low-pressure</text>
+      </g>
+
+      <g transform="translate(720, 190)">
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradCyan)" stroke="#0DEEFD" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#0DEEFD" font-size="10" font-weight="700">DANIEL PINK</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">"To Sell Is Human"</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(13,238,253,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Attunement and clarity. Email reads</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">like it was written by someone who</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">understands their world.</text>
+        <text x="20" y="140" fill="rgba(13,238,253,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">Framing · warm tone variants</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Medical Affairs · empathy-driven opens</text>
+      </g>
+
+      <g transform="translate(1080, 190)">
+        <rect x="0" y="0" width="350" height="180" rx="10" fill="url(#gradMagenta)" stroke="#D73371" stroke-width="1.2"/>
+        <text x="20" y="28" fill="#D73371" font-size="10" font-weight="700">OREN KLAFF · PITCH ANYTHING</text>
+        <text x="20" y="48" fill="white" font-size="12" font-weight="600">Frame control</text>
+        <line x1="20" y1="58" x2="330" y2="58" stroke="rgba(215,51,113,0.3)"/>
+        <text x="20" y="78" fill="rgba(255,255,255,0.8)" font-size="10">Impiricus holds the status frame.</text>
+        <text x="20" y="94" fill="rgba(255,255,255,0.8)" font-size="10">Doesn't beg for a meeting — offers</text>
+        <text x="20" y="108" fill="rgba(255,255,255,0.8)" font-size="10">value, invites engagement.</text>
+        <text x="20" y="140" fill="rgba(215,51,113,0.8)" font-size="9" font-weight="600">ROUTED TO</text>
+        <text x="20" y="155" fill="rgba(255,255,255,0.7)" font-size="10">Bold tone · Challenger combinations</text>
+        <text x="20" y="170" fill="rgba(255,255,255,0.7)" font-size="10">Market Access persona · close positions</text>
+      </g>
+    </g>
+
+    <!-- Framework combination examples -->
+    <g transform="translate(40, 3070)">
+      <rect x="0" y="0" width="1420" height="75" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)"/>
+      <text x="25" y="24" fill="rgba(255,255,255,0.85)" font-size="10" letter-spacing="2" font-weight="700">MATRIX OUTPUT · HOW APPROACH → FRAMEWORK COMBINATIONS WORK</text>
+
+      <text x="25" y="48" fill="rgba(255,255,255,0.85)" font-size="11">
+        <tspan fill="#FF7A45" font-weight="600">Challenger campaign</tspan> → Challenger + Klaff + Tracy
+        &nbsp;·&nbsp;
+        <tspan fill="#CE93D8" font-weight="600">SPIN campaign</tspan> → SPIN + Carnegie + Pink
+        &nbsp;·&nbsp;
+        <tspan fill="#0DEEFD" font-weight="600">Consultative</tspan> → Carnegie + Cialdini + Pink
+      </text>
+      <text x="25" y="64" fill="rgba(255,255,255,0.55)" font-size="10" font-style="italic">
+        Operator can override the default combination with a primary/secondary framework dropdown or free-text instruction ("lean on data-heavy Challenger").
+      </text>
+    </g>
+
+    <path d="M 750 3160 L 750 3210" stroke="#0DEEFD" stroke-width="2.5" marker-end="url(#arrowCyan)"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STAGE 6 — EMAIL STRUCTURE & SIGNAL-TO-PRODUCT MAPPING -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <text x="60" y="3240" fill="#4CAF50" font-size="13" letter-spacing="3" font-weight="700">
+      ⑥ THE AGENT WRITES — 5-PART STRUCTURE · SIGNAL MAPS TO PRODUCT
+    </text>
+    <text x="60" y="3260" fill="rgba(255,255,255,0.55)" font-size="11">
+      Every email follows the same bones. Every signal routes to one of three products. Never fabricated, never templated.
+    </text>
+
+    <!-- Left: Email structure -->
+    <g transform="translate(40, 3285)">
+      <rect x="0" y="0" width="690" height="380" rx="12" fill="rgba(76,175,80,0.06)" stroke="#4CAF50" stroke-width="1.5"/>
+      <text x="20" y="28" fill="#4CAF50" font-size="11" letter-spacing="2" font-weight="700">EMAIL STRUCTURE · 5 PARTS</text>
+
+      <g transform="translate(20, 50)">
+        <rect x="0" y="0" width="650" height="56" rx="6" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)"/>
+        <circle cx="20" cy="28" r="12" fill="#4CAF50"/>
+        <text x="20" y="32" text-anchor="middle" fill="#0D1117" font-size="11" font-weight="700">1</text>
+        <text x="42" y="22" fill="white" font-size="11" font-weight="600">SUBJECT LINE</text>
+        <text x="42" y="38" fill="rgba(255,255,255,0.75)" font-size="10">Signal-grounded. References something specific to this contact or company.</text>
+        <text x="42" y="51" fill="rgba(255,255,255,0.5)" font-size="9" font-style="italic">"KB407 label expansion: HCP engagement window"</text>
+
+        <rect x="0" y="64" width="650" height="56" rx="6" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)"/>
+        <circle cx="20" cy="92" r="12" fill="#4CAF50"/>
+        <text x="20" y="96" text-anchor="middle" fill="#0D1117" font-size="11" font-weight="700">2</text>
+        <text x="42" y="86" fill="white" font-size="11" font-weight="600">OPENING · Carnegie</text>
+        <text x="42" y="102" fill="rgba(255,255,255,0.75)" font-size="10">References contact by name + something real about their situation.</text>
+        <text x="42" y="115" fill="rgba(255,255,255,0.5)" font-size="9" font-style="italic">No "Hope this finds you well." Starts with them.</text>
+
+        <rect x="0" y="128" width="650" height="56" rx="6" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)"/>
+        <circle cx="20" cy="156" r="12" fill="#4CAF50"/>
+        <text x="20" y="160" text-anchor="middle" fill="#0D1117" font-size="11" font-weight="700">3</text>
+        <text x="42" y="150" fill="white" font-size="11" font-weight="600">SIGNAL BRIDGE · Pre-Suasion</text>
+        <text x="42" y="166" fill="rgba(255,255,255,0.75)" font-size="10">Connects contact's reality to an Impiricus-relevant insight.</text>
+        <text x="42" y="179" fill="rgba(255,255,255,0.5)" font-size="9" font-style="italic">"With KB407 approaching, Medical Affairs teams face the same question…"</text>
+
+        <rect x="0" y="192" width="650" height="56" rx="6" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)"/>
+        <circle cx="20" cy="220" r="12" fill="#4CAF50"/>
+        <text x="20" y="224" text-anchor="middle" fill="#0D1117" font-size="11" font-weight="700">4</text>
+        <text x="42" y="214" fill="white" font-size="11" font-weight="600">VALUE PROPOSITION · product-specific</text>
+        <text x="42" y="230" fill="rgba(255,255,255,0.75)" font-size="10">If Pulse → clinical content delivery. If Ascend → field force enhancement.</text>
+        <text x="42" y="243" fill="rgba(255,255,255,0.5)" font-size="9" font-style="italic">Connected to a real signal about the company's needs.</text>
+
+        <rect x="0" y="256" width="650" height="56" rx="6" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)"/>
+        <circle cx="20" cy="284" r="12" fill="#4CAF50"/>
+        <text x="20" y="288" text-anchor="middle" fill="#0D1117" font-size="11" font-weight="700">5</text>
+        <text x="42" y="278" fill="white" font-size="11" font-weight="600">CTA · Tracy / Klaff</text>
+        <text x="42" y="294" fill="rgba(255,255,255,0.75)" font-size="10">Low-pressure · specific · time-anchored.</text>
+        <text x="42" y="307" fill="rgba(255,255,255,0.5)" font-size="9" font-style="italic">"Worth a brief conversation about your Q2 priorities?"</text>
+      </g>
+    </g>
+
+    <!-- Right: Signal-to-product mapping -->
+    <g transform="translate(750, 3285)">
+      <rect x="0" y="0" width="710" height="380" rx="12" fill="rgba(13,238,253,0.06)" stroke="#0DEEFD" stroke-width="1.5"/>
+      <text x="20" y="28" fill="#0DEEFD" font-size="11" letter-spacing="2" font-weight="700">SIGNAL-TO-PRODUCT MAPPING</text>
+      <text x="20" y="50" fill="rgba(255,255,255,0.65)" font-size="10">Every signal steers the email to one of the three Impiricus products.</text>
+
+      <g transform="translate(20, 72)">
+        <!-- Pulse -->
+        <rect x="0" y="0" width="670" height="92" rx="8" fill="rgba(13,238,253,0.08)" stroke="rgba(13,238,253,0.35)"/>
+        <rect x="0" y="0" width="5" height="92" fill="#0DEEFD"/>
+        <text x="20" y="22" fill="#0DEEFD" font-size="12" font-weight="700">PULSE</text>
+        <text x="20" y="40" fill="white" font-size="11">Flighted clinical content delivery via SMS to HCPs</text>
+        <text x="20" y="62" fill="rgba(13,238,253,0.8)" font-size="9" font-weight="600">TRIGGERED BY</text>
+        <text x="20" y="76" fill="rgba(255,255,255,0.8)" font-size="10">S1 FDA approvals · S4 late-stage pipeline · S16 conference presence</text>
+        <text x="20" y="88" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Any launch, label change, or conference window</text>
+
+        <!-- Ascend -->
+        <rect x="0" y="104" width="670" height="92" rx="8" fill="rgba(215,51,113,0.08)" stroke="rgba(215,51,113,0.35)"/>
+        <rect x="0" y="104" width="5" height="92" fill="#D73371"/>
+        <text x="20" y="126" fill="#D73371" font-size="12" font-weight="700">ASCEND</text>
+        <text x="20" y="144" fill="white" font-size="11">AI field force enhancement · Virtual Coordinator · ION · right-channeling</text>
+        <text x="20" y="166" fill="rgba(215,51,113,0.8)" font-size="9" font-weight="600">TRIGGERED BY</text>
+        <text x="20" y="180" fill="rgba(255,255,255,0.8)" font-size="10">S2 field force reduction · S8 no HCP platform · S6 IRA pricing pressure</text>
+        <text x="20" y="192" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Coverage gap · efficiency mandate · tech stack vacancy</text>
+
+        <!-- Spark -->
+        <rect x="0" y="208" width="670" height="92" rx="8" fill="rgba(255,122,69,0.08)" stroke="rgba(255,122,69,0.35)"/>
+        <rect x="0" y="208" width="5" height="92" fill="#FF7A45"/>
+        <text x="20" y="230" fill="#FF7A45" font-size="12" font-weight="700">SPARK</text>
+        <text x="20" y="248" fill="white" font-size="11">Trigger-based personalized messaging to HCPs</text>
+        <text x="20" y="270" fill="rgba(255,122,69,0.8)" font-size="9" font-weight="600">TRIGGERED BY</text>
+        <text x="20" y="284" fill="rgba(255,255,255,0.8)" font-size="10">S5 competitor launch · S7 company milestones · FDA label change</text>
+        <text x="20" y="296" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Urgency signals · response to competitive pressure</text>
+      </g>
+    </g>
+
+    <path d="M 750 3685 L 750 3735" stroke="#4CAF50" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STAGE 7 — CAMPAIGN VIEW -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <text x="60" y="3770" fill="#4CAF50" font-size="13" letter-spacing="3" font-weight="700">
+      ⑦ READY-TO-SEND EMAILS · EACH GROUNDED · EACH EDITABLE
+    </text>
+
+    <g transform="translate(40, 3795)">
+      <rect x="0" y="0" width="900" height="320" rx="12" fill="rgba(255,255,255,0.03)" stroke="#4CAF50" stroke-width="1.5"/>
+      <rect x="0" y="0" width="900" height="36" rx="12" fill="rgba(76,175,80,0.18)"/>
+      <text x="20" y="23" fill="white" font-size="12" font-weight="600">Corcept Therapeutics · Korlym label expansion · Challenger Bold</text>
+      <circle cx="850" cy="18" r="5" fill="#4CAF50"/>
+      <text x="862" y="22" fill="#4CAF50" font-size="10" font-weight="600">READY</text>
+
+      <!-- Email 1: Medical Affairs -->
+      <rect x="20" y="56" width="860" height="80" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+      <circle cx="50" cy="96" r="14" fill="rgba(255,122,69,0.2)" stroke="#FF7A45"/>
+      <text x="50" y="101" text-anchor="middle" fill="#FF7A45" font-size="10" font-weight="700">M</text>
+      <text x="80" y="84" fill="white" font-size="12" font-weight="600">Dr. Lisa Chen · VP Medical Affairs</text>
+      <text x="80" y="100" fill="rgba(255,255,255,0.7)" font-size="10">"Korlym label expansion: the HCP education gap"</text>
+      <text x="80" y="116" fill="rgba(255,255,255,0.4)" font-size="9">Consultative SPIN · Carnegie + Pink · 150 words · cites S1 + S4</text>
+      <text x="870" y="85" text-anchor="end" fill="#4CAF50" font-size="10">Ready</text>
+      <text x="870" y="105" text-anchor="end" fill="rgba(13,238,253,0.8)" font-size="9">Pulse</text>
+
+      <!-- Email 2: Commercial -->
+      <rect x="20" y="144" width="860" height="80" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+      <circle cx="50" cy="184" r="14" fill="rgba(215,51,113,0.2)" stroke="#D73371"/>
+      <text x="50" y="189" text-anchor="middle" fill="#D73371" font-size="10" font-weight="700">C</text>
+      <text x="80" y="172" fill="white" font-size="12" font-weight="600">Maria Rodriguez · VP Commercial Strategy</text>
+      <text x="80" y="188" fill="rgba(255,255,255,0.7)" font-size="10">"The field force math behind the Korlym expansion window"</text>
+      <text x="80" y="204" fill="rgba(255,255,255,0.4)" font-size="9">Challenger + Klaff + Tracy · 150 words · cites S2 + NPI data</text>
+      <text x="870" y="173" text-anchor="end" fill="#4CAF50" font-size="10">Ready</text>
+      <text x="870" y="193" text-anchor="end" fill="rgba(215,51,113,0.8)" font-size="9">Ascend</text>
+
+      <!-- Email 3: Market Access -->
+      <rect x="20" y="232" width="860" height="80" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)"/>
+      <circle cx="50" cy="272" r="14" fill="rgba(13,238,253,0.2)" stroke="#0DEEFD"/>
+      <text x="50" y="277" text-anchor="middle" fill="#0DEEFD" font-size="10" font-weight="700">A</text>
+      <text x="80" y="260" fill="white" font-size="12" font-weight="600">James Morrison · Director, Market Access</text>
+      <text x="80" y="276" fill="rgba(255,255,255,0.7)" font-size="10">"Formulary timing: getting ahead of the Korlym coverage window"</text>
+      <text x="80" y="292" fill="rgba(255,255,255,0.4)" font-size="9">Challenger + Cialdini · 150 words · cites S1 + CMS Formulary</text>
+      <text x="870" y="261" text-anchor="end" fill="#4CAF50" font-size="10">Ready</text>
+      <text x="870" y="281" text-anchor="end" fill="rgba(255,122,69,0.8)" font-size="9">Spark</text>
+    </g>
+
+    <!-- Operator actions -->
+    <g transform="translate(960, 3795)">
+      <rect x="0" y="0" width="500" height="320" rx="12" fill="url(#gradAmber)" stroke="#FFC107" stroke-width="1.5"/>
+      <text x="20" y="28" fill="#FFC107" font-size="11" letter-spacing="3" font-weight="700">OPERATOR CAN</text>
+
+      <rect x="20" y="48" width="460" height="60" rx="8" fill="rgba(76,175,80,0.15)" stroke="rgba(76,175,80,0.5)"/>
+      <text x="40" y="72" fill="#4CAF50" font-size="12" font-weight="700">✓ SEND</text>
+      <text x="40" y="90" fill="rgba(255,255,255,0.8)" font-size="10">Export to CRM. Copy for outbound platform.</text>
+      <text x="40" y="102" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Every citation preserved.</text>
+
+      <rect x="20" y="118" width="460" height="60" rx="8" fill="rgba(255,193,7,0.15)" stroke="rgba(255,193,7,0.5)"/>
+      <text x="40" y="142" fill="#FFC107" font-size="12" font-weight="700">↻ EDIT PARAMETERS · REGENERATE</text>
+      <text x="40" y="160" fill="rgba(255,255,255,0.8)" font-size="10">Change approach, tone, word count. Emails regenerate.</text>
+      <text x="40" y="172" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Signals locked. Manufacturers locked. No re-trigger.</text>
+
+      <rect x="20" y="188" width="460" height="60" rx="8" fill="rgba(13,238,253,0.15)" stroke="rgba(13,238,253,0.5)"/>
+      <text x="40" y="212" fill="#0DEEFD" font-size="12" font-weight="700">✎ EDIT ONE EMAIL</text>
+      <text x="40" y="230" fill="rgba(255,255,255,0.8)" font-size="10">Regenerate just one. Keep the others untouched.</text>
+      <text x="40" y="242" fill="rgba(255,255,255,0.55)" font-size="9" font-style="italic">Framework + signal citations shown inline.</text>
+
+      <rect x="20" y="258" width="460" height="46" rx="8" fill="rgba(215,51,113,0.15)" stroke="rgba(215,51,113,0.5)"/>
+      <text x="40" y="278" fill="#D73371" font-size="12" font-weight="700">🗑 DELETE</text>
+      <text x="40" y="295" fill="rgba(255,255,255,0.75)" font-size="10">Password-protected. Persists after refresh.</text>
+    </g>
+
+    <!-- THE BIG FEEDBACK LOOP -->
+    <path d="M 1460 3955 Q 1490 2800 1490 1200 Q 1490 300 1230 260"
+          stroke="#FFC107" stroke-width="2.5" fill="none" stroke-dasharray="8,5" marker-end="url(#arrowAmber)" opacity="0.75"/>
+    <text x="1480" y="2200" fill="#FFC107" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(90 1480 2200)">
+      SAVED CAMPAIGN FEEDS THE DASHBOARD · INTEL PERSISTS ACROSS ACCOUNTS
+    </text>
+
+  </svg>
+
+  <div class="footer">
+    <div>Impiricus · The AI-Powered SDR Agent · Full Intelligence Stack</div>
+    <div>Agentic AI Delivery Platform for ethical physician-pharma engagement</div>
+  </div>
+</div>
+</body>
+</html>

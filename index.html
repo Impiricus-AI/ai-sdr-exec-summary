@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI SDR: Product outline</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #FFFFFF;
+    color: #262626;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+
+  /* ── Sections (base) ── */
+  section { margin-bottom: 64px; }
+  section p {
+    font-size: 15px;
+    color: #262626;
+    margin-bottom: 12px;
+    line-height: 1.7;
+  }
+  section p:last-child { margin-bottom: 0; }
+  .muted { color: #4D4D4D; font-size: 13px; }
+
+  /* ── Loom slot ── */
+  .loom-slot {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #FAFAFA;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4D4D4D;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .loom-caption {
+    font-size: 13px;
+    color: #4D4D4D;
+  }
+
+  /* ── Supporting materials ── */
+  .materials-list {
+    list-style: none;
+    padding: 0;
+  }
+  .materials-list li {
+    font-size: 14px;
+    color: #262626;
+    padding: 8px 0;
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .materials-list li:last-child { border-bottom: none; }
+  .materials-list a {
+    color: #262626;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    font-size: 12px;
+    color: #4D4D4D;
+    margin-top: 64px;
+    padding-top: 16px;
+    border-top: 1px solid #E0E0E0;
+  }
+
+  /* ═══════════════════════════════════════════
+     Visual overhaul — 2026-04-26
+     ═══════════════════════════════════════════ */
+
+  /* ── FIX 1: Header band ── */
+  .header-band {
+    background: rgba(13, 238, 253, 0.08);
+    padding: 64px 32px;
+    border-bottom: 2px solid #0DEEFD;
+    margin-bottom: 32px;
+  }
+  .header-band-inner {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .header-band svg {
+    display: block;
+    margin-bottom: 16px;
+  }
+  .header-band .hb-title {
+    font-size: 28px;
+    font-weight: 500;
+    color: #262626;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .header-band .hb-tagline {
+    font-size: 14px;
+    font-weight: 400;
+    color: #4D4D4D;
+  }
+  .header-meta {
+    font-size: 12px;
+    color: #4D4D4D;
+    font-weight: 400;
+    margin-bottom: 48px;
+  }
+
+  /* ── FIX 2: Hero stat tiles ── */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5%;
+    margin-bottom: 24px;
+  }
+  .tile {
+    background: #FFFFFF;
+    border: 1px solid #E0E0E0;
+    border-top: 3px solid #0DEEFD;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: left;
+  }
+  .tile .num {
+    font-size: 32px;
+    font-weight: 500;
+    color: #262626;
+    display: block;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .tile .label {
+    font-size: 13px;
+    color: #4D4D4D;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  /* ── FIX 3: Section dividers ── */
+  section h2 {
+    font-size: 22px;
+    font-weight: 500;
+    color: #262626;
+    margin-bottom: 8px;
+  }
+  section h2::before {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: #0DEEFD;
+    margin-bottom: 16px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: #4D4D4D;
+    font-weight: 400;
+    margin-bottom: 32px;
+  }
+  /* When no subhead, add spacing after h2 */
+  section h2 + p,
+  section h2 + .tiles,
+  section h2 + .flow-embed,
+  section h2 + .econ-wrap,
+  section h2 + ul {
+    margin-top: 24px;
+  }
+
+  /* ── FIX 4: Roadmap timeline ── */
+  .timeline-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+  .tl-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #E0E0E0;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .tl-tile {
+    position: relative;
+    z-index: 2;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+  .tl-stage {
+    font-size: 11px;
+    font-weight: 500;
+    color: #4D4D4D;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .tl-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    line-height: 1.5;
+  }
+  .tl-headline {
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: #262626;
+  }
+  .tl-body {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+    margin-bottom: 12px;
+    flex: 1;
+    color: #262626;
+  }
+  .tl-bottom {
+    font-size: 11px;
+    font-weight: 400;
+    margin-top: auto;
+    color: #4D4D4D;
+  }
+  .tl-bottom strong {
+    font-weight: 500;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+    color: #4D4D4D;
+  }
+
+  /* Tile 1 — Today */
+  .tl-t1 {
+    background: #0DEEFD;
+  }
+  .tl-t1 .tl-stage { color: rgba(38,38,38,0.7); }
+  .tl-t1 .tl-badge { background: #FFFFFF; color: #262626; }
+  .tl-t1 .tl-headline { color: #262626; }
+  .tl-t1 .tl-body { color: #262626; }
+  .tl-t1 .tl-bottom { color: rgba(38,38,38,0.65); }
+
+  /* Tile 2 — Next (focal point) */
+  .tl-t2 {
+    background: #FFFFFF;
+    border: 2px solid #0DEEFD;
+    box-shadow: 0 4px 16px rgba(13, 238, 253, 0.18);
+  }
+  .tl-t2 .tl-badge { background: #0DEEFD; color: #262626; }
+
+  /* Tile 3 — Then */
+  .tl-t3 {
+    background: #FFFFFF;
+    border: 1px solid #E0E0E0;
+  }
+  .tl-t3 .tl-badge { background: #E0E0E0; color: #4D4D4D; }
+
+  /* Tile 4/5 — End state / Open horizon */
+  .tl-t4 {
+    background: #FFFFFF;
+    border: 1px solid #E0E0E0;
+  }
+  .tl-t4 .tl-badge { background: #E0E0E0; color: #4D4D4D; }
+
+  /* ── FIX 5: Flow diagram embed ── */
+  .flow-embed {
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 24px;
+    background: #0D1117;
+    overflow-x: auto;
+    margin-bottom: 12px;
+  }
+  .flow-embed svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .flow-embed-caption {
+    font-size: 12px;
+    color: #4D4D4D;
+    font-style: italic;
+  }
+
+  /* ── FIX 6: Economics table ── */
+  .econ-wrap {
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .econ-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .econ-table thead th {
+    background: #262626;
+    color: #FFFFFF;
+    font-weight: 500;
+    font-size: 13px;
+    text-align: left;
+    padding: 14px 16px;
+  }
+  .econ-table thead th:last-child {
+    background: #0DEEFD;
+    color: #262626;
+  }
+  .econ-table tbody td {
+    padding: 14px 16px;
+    color: #262626;
+    font-weight: 400;
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .econ-table tbody tr:nth-child(even) td {
+    background: #FAFAFA;
+  }
+  .econ-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .econ-table tbody td:last-child {
+    font-weight: 500;
+  }
+  .econ-caption {
+    font-size: 12px;
+    color: #4D4D4D;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+    .timeline-row {
+      flex-direction: column;
+      gap: 0;
+      padding-left: 28px;
+    }
+    .timeline-row::before,
+    .timeline-row::after,
+    .timeline-line-grey { display: none; }
+    /* Vertical connecting line */
+    .timeline-row {
+      border-left: 2px solid #E0E0E0;
+    }
+    .tl-tile {
+      width: 100% !important;
+      margin-bottom: 12px;
+      margin-left: 16px;
+    }
+    .tl-t1, .tl-t2 {
+      border-left: 3px solid #0DEEFD;
+    }
+    .tl-dot {
+      left: -26px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ (a) Header band ═══ -->
+<div class="header-band">
+  <div class="header-band-inner">
+    <svg viewBox="0 0 372 88" fill="none" xmlns="http://www.w3.org/2000/svg" height="32" style="width:auto;">
+      <path d="M43.7461 0.491211C67.8898 0.491295 87.4912 20.0966 87.4912 44.2451C87.4912 68.3938 67.8898 87.9999 43.7461 88C19.6022 88 0 68.3939 0 44.2451C3.83706e-05 20.0965 19.6022 0.491211 43.7461 0.491211ZM43.7461 12.3262C40.2182 12.3262 35.2779 13.2992 33.6484 13.96C32.7051 14.3424 32.7629 15.7774 33.9707 16.29L37.9785 17.9072L26.6904 22.4854C26.6904 22.4854 23.9272 21.4068 22.6514 20.3018C16.0199 26.1509 11.833 34.7129 11.833 44.2451C11.833 53.7723 16.0154 62.3305 22.6406 68.1797C23.9087 67.0761 26.6769 66.0043 26.6904 65.999L53.2217 55.2686C53.2217 55.2686 53.4264 55.1887 53.5273 55.1445C54.6855 54.6372 54.6913 53.1198 53.5273 52.626L49.5205 51.0098L60.8076 46.4307C60.8076 46.4307 64.3545 47.8152 65.2676 49.0537C66.1805 50.2923 66.2861 52.2569 66.2861 53.8623C66.2861 55.4676 66.1803 57.4475 65.2676 58.6865C64.3545 59.9255 60.8076 61.2969 60.8076 61.2969L34.2764 72.0264C34.2714 72.0283 34.0702 72.1078 33.9707 72.1514C32.878 72.6303 32.5862 74.0839 33.7852 74.5762C35.4144 75.2451 40.2693 76.1641 43.7461 76.1641C47.0465 76.164 51.5585 75.4667 53.5273 74.6045C54.6855 74.0972 54.6913 72.5798 53.5273 72.0859L49.5205 70.4688L60.8076 65.8906C60.8076 65.8906 63.6617 67.0051 64.9082 68.1289C71.5008 62.2797 75.6582 53.744 75.6582 44.2451C75.6582 34.6882 71.4497 26.1065 64.7881 20.2559C63.488 21.341 60.8076 22.377 60.8076 22.377L34.2764 33.1074C34.2683 33.1106 34.0694 33.1882 33.9707 33.2314C32.8125 33.7388 32.8067 35.256 33.9707 35.75L37.9785 37.3662L26.6904 41.9453C26.6904 41.9453 23.1445 40.5607 22.2314 39.3223C21.3184 38.0838 21.2119 36.1191 21.2119 34.5137C21.2119 32.9083 21.3185 30.9285 22.2314 29.6895C23.1444 28.4504 26.6904 27.0791 26.6904 27.0791L53.2217 16.3496C53.2217 16.3496 53.4263 16.2698 53.5273 16.2256C54.8733 15.6359 54.9065 14.3744 53.9922 14.0098C52.3618 13.3599 47.3286 12.3262 43.7461 12.3262ZM283.681 25.4932C291.641 25.4933 296.276 29.7879 298.839 34.3535L292.187 37.6143C290.66 34.6793 287.388 32.342 283.681 32.3418C277.029 32.3418 272.23 37.3967 272.229 44.2451C272.229 51.0937 277.028 56.1484 283.681 56.1484C287.388 56.1482 290.66 53.8118 292.187 50.877L298.839 54.083C296.276 58.5943 291.641 62.9969 283.681 62.9971C272.721 62.9971 264.269 55.3876 264.269 44.2451C264.269 33.0485 272.721 25.4932 283.681 25.4932ZM311.325 26.0918V47.6152C311.325 52.6701 314.27 56.1484 319.886 56.1484C325.502 56.1484 328.392 52.6701 328.392 47.6152V26.0918H336.298V47.833C336.298 56.8012 330.954 62.997 319.886 62.9971C308.817 62.9971 303.474 56.8012 303.474 47.833V26.0918H311.325ZM355.982 25.5479C361.762 25.5479 366.561 27.2871 370.159 30.6025L365.852 36.3643C362.907 33.6467 358.981 32.3965 355.273 32.3965C352.002 32.3965 350.148 33.8094 350.147 35.9834C350.147 41.6905 371.031 37.8322 371.031 51.3662C371.031 57.9971 366.233 62.9971 356.473 62.9971C349.439 62.9971 344.422 60.6605 340.987 57.2363L345.24 51.2031C347.803 53.8664 351.784 56.1484 356.8 56.1484C361.107 56.1484 363.125 54.2466 363.125 52.127C363.125 45.822 342.187 50.2242 342.187 36.582C342.187 30.5488 347.422 25.5479 355.982 25.5479ZM113.177 26.0918V62.3447H105.434V26.0918H113.177ZM131.225 26.0918L140.059 48.7568L148.892 26.0918H159.797V62.3447H151.999V36.2012L141.748 62.3447H138.368L128.117 36.2012V62.3447H120.374V26.0918H131.225ZM184.006 26.0918C191.912 26.0918 196.22 31.418 196.22 37.7773C196.22 44.0823 191.858 49.4092 184.006 49.4092H174.736V62.3447H166.994V26.0918H184.006ZM208.815 26.0918V62.3447H201.073V26.0918H208.815ZM233.025 26.0918C240.605 26.0918 245.294 31.0375 245.294 37.7773C245.294 44.1367 241.204 47.615 237.278 48.5391L245.512 62.3447H236.569L229.427 49.4629H223.756V62.3447H216.013V26.0918H233.025ZM258.816 26.0918V62.3447H251.073V26.0918H258.816ZM60.8076 26.9717C60.8076 26.9717 64.3544 28.3553 65.2676 29.5938C66.1805 30.8322 66.2861 32.7969 66.2861 34.4023C66.2861 36.0076 66.1802 37.9874 65.2676 39.2266C64.3545 40.4656 60.8076 41.8369 60.8076 41.8369L34.2764 52.5664C34.275 52.5669 34.0711 52.6474 33.9707 52.6914C32.8126 53.1988 32.8066 54.716 33.9707 55.21L37.9785 56.8262L26.6904 61.4043C26.6654 61.3945 23.1414 60.0162 22.2314 58.7822C21.3184 57.5438 21.2119 55.5791 21.2119 53.9736C21.2119 52.3683 21.3186 50.3885 22.2314 49.1494C23.1444 47.9104 26.6904 46.5391 26.6904 46.5391L53.2217 35.8096C53.2217 35.8096 53.4264 35.7287 53.5273 35.6846C54.6855 35.1772 54.6913 33.66 53.5273 33.166L49.5205 31.5498L60.8076 26.9717ZM223.756 32.8857V42.6689H231.935C234.988 42.6689 237.333 40.8208 237.333 37.7227C237.333 34.7334 234.988 32.8857 231.935 32.8857H223.756ZM174.736 32.8857V42.6152H182.916C185.969 42.6151 188.313 40.7667 188.313 37.7773C188.313 34.7337 185.969 32.8859 182.916 32.8857H174.736Z" fill="url(#opLogoG)"/>
+      <defs><linearGradient id="opLogoG" x1="0" y1="44" x2="372" y2="44" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#0DEEFD"/><stop offset=".22" stop-color="#0DEEFD"/>
+        <stop offset=".28" stop-color="#262626"/><stop offset="1" stop-color="#262626"/>
+      </linearGradient></defs>
+    </svg>
+    <div class="hb-title">AI SDR</div>
+    <div style="font-size:16px; font-weight:400; color:#0DEEFD; letter-spacing:0.5px; margin-top:6px;">Signal-driven intelligence. Personalized outreach. Ready-to-send emails.</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="header-meta">Monday, April 27, 2026 &middot; Mansoor Amir</div>
+
+  <!-- (b) Loom video block -->
+  <section>
+    <div class="loom-block" style="display: flex; gap: 20px; align-items: center; padding: 20px; border: 1px solid #E0E0E0; border-radius: 12px; margin: 24px 0; background: #FAFAFA;">
+      <a href="https://www.loom.com/share/406ce347446f47b8b51b3c29ed39f334" target="_blank" rel="noopener" style="flex: 0 0 auto; display: block; width: 240px; height: 135px; border-radius: 8px; overflow: hidden; background: #262626; text-decoration: none; position: relative;">
+        <img src="loom-thumbnail.png" alt="Watch the walkthrough" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(13,238,253,0.95); display: flex; align-items: center; justify-content: center;">
+            <div style="width: 0; height: 0; border-left: 18px solid #0D1117; border-top: 12px solid transparent; border-bottom: 12px solid transparent; margin-left: 4px;"></div>
+          </div>
+        </div>
+      </a>
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 11px; letter-spacing: 1.5px; color: #0DEEFD; font-weight: 500; margin-bottom: 6px; text-transform: uppercase;">Walkthrough</div>
+        <div style="font-size: 16px; font-weight: 500; color: #262626; margin-bottom: 6px;">Quick walkthrough of the tool end-to-end</div>
+        <div style="font-size: 13px; color: #4D4D4D; line-height: 1.5;">From opening a campaign to generated emails ready for review.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- (c) What this is -->
+  <section>
+    <h2>What this is</h2>
+    <p>An AI-powered planning and outreach engine for reaching pharmaceutical manufacturers. The operator opens a conversation with the tool to game-plan a campaign: picking which manufacturers to target, what angle to lead with, what signals to surface. The system pulls live signals from Clay and six federal drug databases, identifies the right contacts inside each manufacturer (Medical Affairs, Commercial, Market Access leads), and writes a tailored email per contact, grounded in real signals about their company. Every email passes deterministic verification at the code level before the operator sees it.</p>
+    <p>Tested across nearly 50 manufacturers and hundreds of generated emails during development. Current working set: 96 verified emails at a 97% pass rate. Sales has reviewed the content over the past two weeks; feedback drove revisions, and the first batch is greenlit for live sending.</p>
+  </section>
+
+  <!-- (d) What good looks like -->
+  <section>
+    <h2>What good looks like</h2>
+    <p>Outreach grounded in real manufacturer signal, persona-targeted to each contact, brand-consistent with Impiricus voice, produced in seconds and verified before it reaches the operator.</p>
+  </section>
+
+  <!-- (e) Why this exists -->
+  <section>
+    <h2>Why this exists</h2>
+    <p>The general-purpose outreach stack can be pointed at pharma. It can be loaded with attachments, slide decks, and product context. But there's a ceiling to what that approach reaches. The differentiation lives in the boxes below.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px;">
+      <div style="background:#FFFFFF; border:1px solid #E0E0E0; border-left:3px solid #0DEEFD; border-radius:8px; padding:18px 16px;">
+        <div style="font-size:14px; font-weight:500; color:#262626; margin-bottom:6px;">Pharma context loaded, not bolted on</div>
+        <div style="font-size:13px; font-weight:400; color:#4D4D4D; line-height:1.55;">Other tools accept pharma context as runtime input: slide decks, product briefs, persona notes the model consults. Here it's structural: every prompt, scoring decision, and verification check is written in pharma from the ground up.</div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E0E0E0; border-left:3px solid #D73371; border-radius:8px; padding:18px 16px;">
+        <div style="font-size:14px; font-weight:500; color:#262626; margin-bottom:6px;">Agentic planning inside HubSpot</div>
+        <div style="font-size:13px; font-weight:400; color:#4D4D4D; line-height:1.55;">The operator opens a conversation, points the tool at HubSpot, and works through which manufacturers to target. The tool prospects inside the CRM and builds the campaign.</div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E0E0E0; border-left:3px solid #FF7A45; border-radius:8px; padding:18px 16px;">
+        <div style="font-size:14px; font-weight:500; color:#262626; margin-bottom:6px;">Open signal stack, composed per campaign</div>
+        <div style="font-size:13px; font-weight:400; color:#4D4D4D; line-height:1.55;">Most outreach platforms ship a fixed enrichment menu. This one isn't capped by a vendor's catalog. Any data source available in the wider API world can plug in. Today: Clay enrichment plus six federal pharma sources. Tomorrow: whatever the campaign needs.</div>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E0E0E0; border-left:3px solid #4CAF50; border-radius:8px; padding:18px 16px;">
+        <div style="font-size:14px; font-weight:500; color:#262626; margin-bottom:6px;">Layered verification, not a single LLM call</div>
+        <div style="font-size:13px; font-weight:400; color:#4D4D4D; line-height:1.55;">Scoring, signal validation, fabrication guards, content gates, and a final 10-check code-level pass. Claims that fail the gate never reach the operator.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- (f) How it works — embedded pipeline diagram (deep-dive sibling) -->
+  <section>
+    <h2>How it works</h2>
+    <p>From campaign brief to ready-to-send emails, every run flows through the same pipeline.</p>
+
+    <div style="background:#0D1117; border-radius:10px; padding:28px 24px 20px; margin:24px 0 8px;">
+      <svg viewBox="0 0 672 340" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block;">
+        <defs>
+          <marker id="aCyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 L1.5,3z" fill="#0DEEFD"/></marker>
+          <marker id="aMag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 L1.5,3z" fill="#D73371"/></marker>
+          <marker id="aOrng" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 L1.5,3z" fill="#FF7A45"/></marker>
+          <marker id="aPurp" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 L1.5,3z" fill="#CE93D8"/></marker>
+          <marker id="aGrn" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 L1.5,3z" fill="#4CAF50"/></marker>
+        </defs>
+
+        <!-- Legend -->
+        <line x1="0" y1="6" x2="20" y2="6" stroke="#0DEEFD" stroke-width="2.5"/>
+        <text x="24" y="10" fill="rgba(255,255,255,0.7)" font-size="8" font-weight="400">Operator action</text>
+        <line x1="110" y1="6" x2="130" y2="6" stroke="#D73371" stroke-width="2.5"/>
+        <text x="134" y="10" fill="rgba(255,255,255,0.7)" font-size="8" font-weight="400">Live data call</text>
+        <line x1="210" y1="6" x2="230" y2="6" stroke="#CE93D8" stroke-width="2.5" stroke-dasharray="2,2"/>
+        <text x="234" y="10" fill="rgba(255,255,255,0.7)" font-size="8" font-weight="400">Signal returning</text>
+        <line x1="320" y1="6" x2="340" y2="6" stroke="#4CAF50" stroke-width="2.5"/>
+        <text x="344" y="10" fill="rgba(255,255,255,0.7)" font-size="8" font-weight="400">Output</text>
+
+        <!-- Stage A — Build a campaign -->
+        <rect x="0" y="28" width="122" height="120" rx="8" fill="#161B22" stroke="rgba(13,238,253,0.4)" stroke-width="1.5"/>
+        <text x="14" y="48" fill="#0DEEFD" font-size="8" font-weight="600" letter-spacing="1.5">① BUILD CAMPAIGN</text>
+        <text x="14" y="66" fill="rgba(255,255,255,0.85)" font-size="10" font-weight="500">Operator game-plans</text>
+        <text x="14" y="80" fill="rgba(255,255,255,0.55)" font-size="8.5">Opens a conversation,</text>
+        <text x="14" y="92" fill="rgba(255,255,255,0.55)" font-size="8.5">picks manufacturers from</text>
+        <text x="14" y="104" fill="rgba(255,255,255,0.55)" font-size="8.5">HubSpot, sets approach</text>
+        <text x="61" y="140" text-anchor="middle" fill="#0DEEFD" font-size="7" font-weight="500" letter-spacing="1">OPERATOR ACTION</text>
+
+        <!-- Arrow A→B -->
+        <line x1="122" y1="88" x2="142" y2="88" stroke="#0DEEFD" stroke-width="1.5" marker-end="url(#aCyan)"/>
+
+        <!-- Stage B — Pull signals -->
+        <rect x="146" y="28" width="122" height="120" rx="8" fill="#161B22" stroke="rgba(215,51,113,0.4)" stroke-width="1"/>
+        <text x="160" y="48" fill="#D73371" font-size="8" font-weight="600" letter-spacing="1.5">② PULL SIGNALS</text>
+        <text x="160" y="66" fill="rgba(255,255,255,0.85)" font-size="10" font-weight="500">Manufacturer intel</text>
+        <text x="160" y="80" fill="rgba(255,255,255,0.55)" font-size="8.5">Clay (12 signal families).</text>
+        <text x="160" y="92" fill="rgba(255,255,255,0.55)" font-size="8.5">Regulatory + clinical from</text>
+        <text x="160" y="104" fill="rgba(255,255,255,0.55)" font-size="8.5">FDA, NPI, CMS, ClinTrials</text>
+
+        <!-- Arrow B→C -->
+        <line x1="268" y1="88" x2="288" y2="88" stroke="#D73371" stroke-width="1.5" marker-end="url(#aMag)"/>
+
+        <!-- Stage C — Find and score -->
+        <rect x="292" y="28" width="122" height="120" rx="8" fill="#161B22" stroke="rgba(255,122,69,0.4)" stroke-width="1"/>
+        <text x="306" y="48" fill="#FF7A45" font-size="8" font-weight="600" letter-spacing="1.5">③ FIND + SCORE</text>
+        <text x="306" y="66" fill="rgba(255,255,255,0.85)" font-size="10" font-weight="500">Right contacts</text>
+        <text x="306" y="80" fill="rgba(255,255,255,0.55)" font-size="8.5">Discovers contacts inside</text>
+        <text x="306" y="92" fill="rgba(255,255,255,0.55)" font-size="8.5">each manufacturer. Scored</text>
+        <text x="306" y="104" fill="rgba(255,255,255,0.55)" font-size="8.5">on role fit + signal proximity</text>
+
+        <!-- Arrow C→D -->
+        <line x1="414" y1="88" x2="434" y2="88" stroke="#FF7A45" stroke-width="1.5" marker-end="url(#aOrng)"/>
+
+        <!-- Stage D — Match product -->
+        <rect x="438" y="28" width="100" height="120" rx="8" fill="#161B22" stroke="rgba(206,147,216,0.4)" stroke-width="1"/>
+        <text x="452" y="48" fill="#CE93D8" font-size="8" font-weight="600" letter-spacing="1.5">④ MATCH</text>
+        <text x="452" y="66" fill="rgba(255,255,255,0.85)" font-size="10" font-weight="500">Product fit</text>
+        <text x="452" y="80" fill="rgba(255,255,255,0.55)" font-size="8.5">Signal mix maps to</text>
+        <text x="452" y="92" fill="rgba(255,255,255,0.55)" font-size="8.5">Pulse, Ascend, or</text>
+        <text x="452" y="104" fill="rgba(255,255,255,0.55)" font-size="8.5">Spark</text>
+
+        <!-- Arrow D→E -->
+        <line x1="538" y1="88" x2="558" y2="88" stroke="#CE93D8" stroke-width="1.5" marker-end="url(#aPurp)"/>
+
+        <!-- Stage E — Generate + deliver -->
+        <rect x="562" y="28" width="110" height="120" rx="8" fill="#161B22" stroke="rgba(76,175,80,0.5)" stroke-width="1.5"/>
+        <text x="576" y="48" fill="#4CAF50" font-size="8" font-weight="600" letter-spacing="1.5">⑤ GENERATE</text>
+        <text x="576" y="66" fill="rgba(255,255,255,0.85)" font-size="10" font-weight="500">Verify + deliver</text>
+        <text x="576" y="80" fill="rgba(255,255,255,0.55)" font-size="8.5">Written against persuasion</text>
+        <text x="576" y="92" fill="rgba(255,255,255,0.55)" font-size="8.5">framework. Output to</text>
+        <text x="576" y="104" fill="rgba(255,255,255,0.55)" font-size="8.5">HubSpot or campaign view</text>
+        <text x="617" y="140" text-anchor="middle" fill="#4CAF50" font-size="7" font-weight="500" letter-spacing="1">OUTPUT</text>
+
+        <!-- Quality check annotations — dotted connectors below stages -->
+        <line x1="353" y1="148" x2="353" y2="168" stroke="rgba(255,122,69,0.5)" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="295" y="170" width="116" height="20" rx="5" fill="rgba(255,122,69,0.1)" stroke="rgba(255,122,69,0.3)" stroke-width="1"/>
+        <text x="353" y="184" text-anchor="middle" fill="#FF7A45" font-size="7.5" font-weight="500">Scoring + signal validation</text>
+
+        <line x1="488" y1="148" x2="488" y2="190" stroke="rgba(206,147,216,0.5)" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="432" y="192" width="112" height="20" rx="5" fill="rgba(206,147,216,0.1)" stroke="rgba(206,147,216,0.3)" stroke-width="1"/>
+        <text x="488" y="206" text-anchor="middle" fill="#CE93D8" font-size="7.5" font-weight="500">Fabrication guards</text>
+
+        <line x1="617" y1="148" x2="617" y2="168" stroke="rgba(76,175,80,0.5)" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="559" y="170" width="116" height="20" rx="5" fill="rgba(76,175,80,0.1)" stroke="rgba(76,175,80,0.3)" stroke-width="1"/>
+        <text x="617" y="184" text-anchor="middle" fill="#4CAF50" font-size="7.5" font-weight="500">10-check final pass</text>
+
+        <!-- Signal sources row -->
+        <text x="0" y="240" fill="rgba(255,255,255,0.4)" font-size="7.5" font-weight="600" letter-spacing="1.5">SIGNAL SOURCES</text>
+        <rect x="0" y="250" width="100" height="20" rx="5" fill="rgba(215,51,113,0.1)" stroke="rgba(215,51,113,0.25)" stroke-width="1"/>
+        <text x="50" y="264" text-anchor="middle" fill="#D73371" font-size="7.5" font-weight="500">Clay (12 families)</text>
+        <rect x="108" y="250" width="180" height="20" rx="5" fill="rgba(206,147,216,0.1)" stroke="rgba(206,147,216,0.25)" stroke-width="1"/>
+        <text x="198" y="264" text-anchor="middle" fill="#CE93D8" font-size="7.5" font-weight="500">Federal: FDA, CMS, NPI, ClinTrials</text>
+        <rect x="296" y="250" width="80" height="20" rx="5" fill="rgba(13,238,253,0.1)" stroke="rgba(13,238,253,0.25)" stroke-width="1"/>
+        <text x="336" y="264" text-anchor="middle" fill="#0DEEFD" font-size="7.5" font-weight="500">HubSpot CRM</text>
+
+        <!-- Quality layer row -->
+        <text x="0" y="296" fill="rgba(255,255,255,0.4)" font-size="7.5" font-weight="600" letter-spacing="1.5">QUALITY LAYER</text>
+        <text x="110" y="296" fill="rgba(255,255,255,0.5)" font-size="7.5" font-weight="400">Scoring · Signal validation · Fabrication guards · Content gates · 10-check code-level final pass</text>
+      </svg>
+    </div>
+
+    <div style="font-size:12px; color:#4D4D4D; font-style:italic;">Full pipeline detail in the system flow diagram linked below.</div>
+  </section>
+
+  <!-- (h) Economics -->
+  <section>
+    <h2>Economics</h2>
+    <div class="econ-wrap">
+      <table class="econ-table">
+        <thead>
+          <tr>
+            <th>Volume</th>
+            <th>Manufacturers</th>
+            <th>Contacts per mfg</th>
+            <th>Anthropic API</th>
+            <th>Clay credits</th>
+            <th>Clay $</th>
+            <th>Total</th>
+            <th>% of annual Clay plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:rgba(224,224,224,0.25)"><td>1 email <span style="display:inline-block; font-size:10px; color:#4D4D4D; border:1px solid #E0E0E0; border-radius:8px; padding:1px 6px; margin-left:4px; vertical-align:middle;">low-volume baseline</span></td><td>1</td><td>1</td><td>~$0.10</td><td>52</td><td>$0.70</td><td>~$0.80</td><td>0.004%</td></tr>
+          <tr><td>100 emails</td><td>10</td><td>10</td><td>~$10</td><td>1,733</td><td>$23</td><td>~$33</td><td>0.14%</td></tr>
+          <tr><td>1,000 emails</td><td>100</td><td>10</td><td>~$100</td><td>17,334</td><td>$234</td><td>~$334</td><td>1.44%</td></tr>
+          <tr><td>10,000 emails</td><td>1,000</td><td>10</td><td>~$1,000</td><td>173,340</td><td>$2,340</td><td>~$3,340</td><td>14.45%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="econ-caption">The scaling unit is roughly 10 contacts per manufacturer. Costs scale linearly from 100 emails up. The 1-email row carries fixed manufacturer enrichment overhead that amortizes away as contact count grows.</div>
+  </section>
+
+  <!-- (f) Value milestone roadmap -->
+  <section>
+    <h2>Value milestone roadmap</h2>
+    <div class="section-sub">Each milestone unlocks the next. The active milestone is expanded below.</div>
+
+    <!-- Vertical timeline -->
+    <div style="position:relative; padding-left:40px;">
+      <!-- Vertical line -->
+      <div style="position:absolute; left:14px; top:8px; bottom:0; width:2px; background:linear-gradient(to bottom, #0DEEFD 0%, #0DEEFD 25%, #E0E0E0 25%, #E0E0E0 100%);"></div>
+
+      <!-- Milestone 1 — Live -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-40px; top:4px; width:28px; height:28px; border-radius:50%; background:#0DEEFD; display:flex; align-items:center; justify-content:center;">
+          <span style="color:#262626; font-size:11px; font-weight:600;">1</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:4px;">
+          <span style="font-size:11px; font-weight:500; color:#4D4D4D; text-transform:uppercase; letter-spacing:0.5px;">Today</span>
+          <span style="font-size:10px; font-weight:500; color:#262626; background:#0DEEFD; padding:2px 8px; border-radius:10px;">Live</span>
+        </div>
+        <div style="font-size:16px; font-weight:500; color:#262626; margin-bottom:4px;">Validated AI logic</div>
+        <div style="font-size:13px; color:#4D4D4D; line-height:1.5;">Generation pipeline, verification layer, modular signal integration, persona routing, and HubSpot conversational planning all validated across nearly 50 manufacturers and hundreds of generated emails. Sales has reviewed the content; revisions cycled in. First emails greenlit for live sending. The core logic works.</div>
+      </div>
+
+      <!-- Milestone 2 — Active (expanded) -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-40px; top:4px; width:28px; height:28px; border-radius:50%; background:#0DEEFD; box-shadow:0 0 12px rgba(13,238,253,0.5); display:flex; align-items:center; justify-content:center;">
+          <span style="color:#262626; font-size:11px; font-weight:600;">2</span>
+        </div>
+        <div style="background:#FFFFFF; border:2px solid #0DEEFD; border-radius:10px; padding:16px 18px; box-shadow:0 4px 16px rgba(13,238,253,0.12);">
+          <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:4px;">
+            <span style="font-size:11px; font-weight:500; color:#4D4D4D; text-transform:uppercase; letter-spacing:0.5px;">In progress</span>
+            <span style="font-size:10px; font-weight:500; color:#262626; background:#0DEEFD; padding:2px 8px; border-radius:10px;">In progress</span>
+          </div>
+          <div style="font-size:16px; font-weight:500; color:#262626; margin-bottom:4px;">Multi-user, cross-platform testable</div>
+          <div style="font-size:13px; color:#4D4D4D; line-height:1.5;">Tool runs on a hosted environment accessible from both Windows and Mac. Two to three testers generate campaigns independently. Reply data starts flowing.</div>
+          <div style="font-size:11px; color:#4D4D4D; margin-top:8px;"><strong style="font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">Unlocked by</strong> Hosted environment, basic auth, server-side persistence</div>
+        </div>
+      </div>
+
+      <!-- Milestone 3 — Sequenced -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-40px; top:4px; width:28px; height:28px; border-radius:50%; background:#FFFFFF; border:2px solid #FF7A45; display:flex; align-items:center; justify-content:center;">
+          <span style="color:#FF7A45; font-size:11px; font-weight:600;">3</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:4px;">
+          <span style="font-size:11px; font-weight:500; color:#4D4D4D; text-transform:uppercase; letter-spacing:0.5px;">Then</span>
+          <span style="font-size:10px; font-weight:500; color:#4D4D4D; background:#E0E0E0; padding:2px 8px; border-radius:10px;">Sequenced</span>
+        </div>
+        <div style="font-size:16px; font-weight:500; color:#262626; margin-bottom:4px;">Small group runs it reliably</div>
+        <div style="font-size:13px; color:#4D4D4D; line-height:1.5;">Five to ten reps use the tool daily. Edge cases resolved, error handling hardened.</div>
+        <div style="font-size:11px; color:#4D4D4D; margin-top:6px;"><strong style="font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">Unlocked by</strong> Hardening pass, error recovery, usage telemetry</div>
+      </div>
+
+      <!-- Milestone 4 — Future -->
+      <div style="position:relative; margin-bottom:28px;">
+        <div style="position:absolute; left:-40px; top:4px; width:28px; height:28px; border-radius:50%; background:#FFFFFF; border:2px solid #CE93D8; display:flex; align-items:center; justify-content:center;">
+          <span style="color:#CE93D8; font-size:11px; font-weight:600;">4</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:4px;">
+          <span style="font-size:11px; font-weight:500; color:#4D4D4D; text-transform:uppercase; letter-spacing:0.5px;">End state</span>
+          <span style="font-size:10px; font-weight:500; color:#4D4D4D; background:#E0E0E0; padding:2px 8px; border-radius:10px;">Future</span>
+        </div>
+        <div style="font-size:16px; font-weight:500; color:#262626; margin-bottom:4px;">Internal self-serve</div>
+        <div style="font-size:13px; color:#4D4D4D; line-height:1.5;">Anyone with access uses the tool without training. Campaign history persistent, auditable, tied to identity.</div>
+        <div style="font-size:11px; color:#4D4D4D; margin-top:6px;"><strong style="font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">Unlocked by</strong> SSO, compliance logging, role-based access</div>
+      </div>
+
+      <!-- Milestone 5 — Not committed -->
+      <div style="position:relative;">
+        <div style="position:absolute; left:-40px; top:4px; width:28px; height:28px; border-radius:50%; background:#FFFFFF; border:2px solid #E0E0E0; display:flex; align-items:center; justify-content:center;">
+          <span style="color:#E0E0E0; font-size:11px; font-weight:600;">5</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:4px;">
+          <span style="font-size:11px; font-weight:500; color:#4D4D4D; text-transform:uppercase; letter-spacing:0.5px;">Open horizon</span>
+          <span style="font-size:10px; font-weight:500; color:#4D4D4D; background:#E0E0E0; padding:2px 8px; border-radius:10px;">Not committed</span>
+        </div>
+        <div style="font-size:16px; font-weight:500; color:#262626; margin-bottom:4px;">Possible futures, not committed</div>
+        <div style="font-size:13px; color:#4D4D4D; line-height:1.5;">Commercial offering, client-facing version, product integration. Possible directions, not planned work.</div>
+        <div style="font-size:11px; color:#4D4D4D; margin-top:6px;"><strong style="font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">Unlocked by</strong> Proven internal value and a decision to invest further</div>
+      </div>
+    </div>
+
+    <!-- Active milestone panel -->
+    <div style="background:#FFFFFF; border:1px solid #E0E0E0; border-top:2px solid #0DEEFD; border-radius:12px; padding:32px 24px 24px; margin-top:32px;">
+      <div style="font-size:10px; letter-spacing:1.5px; color:#0DEEFD; font-weight:500; margin-bottom:20px;">ACTIVE MILESTONE: WHAT'S NEEDED</div>
+      <div style="display:flex; gap:0;">
+        <div style="flex:1; padding-right:24px;">
+          <div style="font-size:11px; font-weight:500; color:#0DEEFD; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Required</div>
+          <p style="font-size:13px; color:#262626; font-weight:400; line-height:1.6; margin:0;">Hosted environment with basic authentication. Server-side persistence so campaign state survives across machines. Cross-platform compatibility verified on Mac and Windows.</p>
+        </div>
+        <div style="width:1px; background:#E0E0E0; align-self:stretch;"></div>
+        <div style="flex:1; padding:0 24px;">
+          <div style="font-size:11px; font-weight:500; color:#0DEEFD; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Approach</div>
+          <p style="font-size:13px; color:#262626; font-weight:400; line-height:1.6; margin:0;">Stand up an internal-only hosted instance. Move state from local files to server-side storage. Wire basic auth in front of the dashboard. Hand keys to two to three testers and let them run real campaigns.</p>
+        </div>
+        <div style="width:1px; background:#E0E0E0; align-self:stretch;"></div>
+        <div style="flex:1; padding-left:24px;">
+          <div style="font-size:11px; font-weight:500; color:#0DEEFD; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Dependencies and timing</div>
+          <p style="font-size:13px; color:#262626; font-weight:400; line-height:1.6; margin:0;">Engineering bandwidth for the hosted setup. Approval to give early access ahead of broader hardening. Tester selection and onboarding window. No blockers identified beyond resourcing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- (j) Additional information -->
+  <section>
+    <h2>Additional information</h2>
+    <ul class="materials-list">
+      <li><a href="system-flow-diagram.html" target="_blank" rel="noopener" style="color:#0DEEFD;">AI SDR: full system flow diagram</a></li>
+    </ul>
+  </section>
+
+</div>
+</body>
+</html>
